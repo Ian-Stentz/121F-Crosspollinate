@@ -9,7 +9,6 @@ Ian Stentz - Tools Lead
 Lorraine Torres - Engine Lead
 
 ## Tools and Materials
-
 We will be using Phaser as a 2D framework primarily because all our engineers have past experience with Phaser. Phaser’s modular structure would allow team members to focus on different aspects of the game (physics, graphics, or input handling) while maintaining smooth collaboration. Phaser 3 and its libraries also offer many built-in-tools for asset management, physics, and rendering, enabling quick prototyping and iteration. Phaser also provides extensive documentation to facilitate resource finding and troubleshooting, allowing our team to implement an efficient game.
 
 
@@ -22,7 +21,6 @@ We expect to use Visual Studio Code for code authoring throughout the project, a
 Our platform switch will be from javascript to typescript. We feel like this is a meaningful change because though we are keeping Phaser, which will help greatly with displaying images, typescript will require us to restructure our code - unlike, for example, how a change from typescript to javascript might go. We chose typescript because it is familiar to all of us, and the platform switch options with other common game engines like Unity seemed to go too obscure.
 
 ## Outlook
-What is your team hoping to accomplish that other teams might not attempt?
-What do you anticipate being the hardest or riskiest part of the project?
-What are you hoping to learn by approaching the project with the tools and materials you selected above?
+While other teams may focus on a simple farming simulator, we intend to focus on the act of creating new crops by cross-pollination. We anticipate that the most challenging part of the project will be to implement consistent formatting between code and clear documentation. We hope to learn how to implement the various design patterns and learn what development in Javascript looks like from beginning-to-end.
+
 
