@@ -1,7 +1,7 @@
 Collaborative Version : 
 https://docs.google.com/document/d/1U30FLGgXsUcconFvlvZ_Tiv2GbogxrHIc-Jqn5xpH_Q/edit?usp=sharing
 
-### Devlog Entry #1 - 11/17/2024
+# Devlog Entry #1 - 11/17/2024
 
 ## Introducing the Team
 Carolyn Hope - Design Lead
