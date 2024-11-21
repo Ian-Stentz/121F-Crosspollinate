@@ -1,7 +1,8 @@
 //canvas dim
 let [cw, ch] = [600, 600];
-let totalTime = 0;
 let [gw, gh] = [6, 6];
+
+let frame = 0;
 
 //board is represented as a 1d array to take advantage of data locality & it's easier to convert to other languages that don't have easy support for 2d arrays
 //(COUGH COUGH UNREAL)
@@ -44,15 +45,14 @@ function setup() {
   background(220);
 }
 
-function myUpdate(delta) {
-  totalTime += delta/1000;
-}
-
 function keyPressed() {
 
 }
 
+function advanceTime() {
+  frame++;
+}
+
 function draw() {
-  myUpdate(deltaTime);
   drawBoard();
 }
