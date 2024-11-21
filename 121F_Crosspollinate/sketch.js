@@ -18,6 +18,13 @@ function setBoard(board, i, j, newVal) {
   board[j * gw + i] = newVal;
 }
 
+//useful for getting the canvas location of tiles, for player purposes, etc. Recall that Y is top to bottom in phaser's canvas
+function getTileBounds(i, j) {
+  let width = cw/gw;
+  let height = ch/gh;
+  return [i*width, j*height, (i+1)*width, (j+1)*height];
+}
+
 function drawBoard() {
   let width = cw/gw;
   let height = ch/gh;
@@ -34,7 +41,7 @@ function drawBoard() {
 
 function setup() {
   createCanvas(cw, ch);
-
+  background(220);
 }
 
 function myUpdate(delta) {
@@ -47,6 +54,5 @@ function keyPressed() {
 
 function draw() {
   myUpdate(deltaTime);
-  background(220);
   drawBoard();
 }
