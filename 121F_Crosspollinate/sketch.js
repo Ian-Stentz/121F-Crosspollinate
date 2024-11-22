@@ -63,7 +63,11 @@ function setup() {
 }
 
 function keyPressed() {
-  advanceTime();
+  switch (key) {
+    case " ":
+      advanceTime();
+      break;
+  }
 }
 
 function advanceTime() {
