@@ -1,16 +1,23 @@
-//canvas dim
+//canvas dimensions
 let [cw, ch] = [600, 600];
 let [gw, gh] = [6, 6];
 
 let frame = 0;
 
-//Params
-
+//Parameters
 const MIN_SUN = 1;
 const MAX_SUN = 2;
 const WATER_COEFFICIENT = 1.2;
 const MAX_WATER = 5;
 
+// Create player object with initial position
+let player = {
+  x: 0,
+  y: 0
+};
+
+// Create player marker
+let playerImg;
 
 //board is represented as a 1d array to take advantage of data locality & it's easier to convert to other languages that don't have easy support for 2d arrays
 //(COUGH COUGH UNREAL)
@@ -21,7 +28,6 @@ let board = Array(gw*gh).fill().map(u => {
     "crop": null
   })
 });
-
 
 //I anticipate there will be either different boards to represent different things or 1 board that contains a lot of data on it.
 //The latter will probably be easier to convert to typescript, but might be less efficient and less clean
@@ -55,6 +61,23 @@ function drawBoard() {
       text("💧: " + getBoard(board, i, j).moisture, i*width + width/12, j*height + height/3);
     }
   }
+
+  // Position the player image
+   let playerBounds = getTileBounds(player.x, player.y);
+   let imageWidth = playerBounds[2] - playerBounds[0];
+   let imageHeight = playerBounds[3] - playerBounds[1];
+ 
+  // Calculate the coordinates to position player in the top-right corner (adjusted for the image width)
+   let playerX = playerBounds[0] + imageWidth - imageWidth * 0.45;  // top-right corner of the grid cell
+   let playerY = playerBounds[1] + 10;  // top edge of the grid cell
+
+  // Calculate the coordinates to center the player to grid
+   //let playerX = playerBounds[0] + (imageWidth - imageWidth * 0.5) / 2;
+   //let playerY = playerBounds[1] + (imageHeight - imageHeight * 0.5) / 2;
+ 
+  // Scale the image to 50% of its original size and place in the top-right corner
+   let scaleFactor = 0.3;
+   image(playerImg, playerX, playerY, imageWidth * scaleFactor, imageHeight * scaleFactor);
 }
 
 function setup() {
@@ -62,14 +85,28 @@ function setup() {
   background(220);
 }
 
+// Key press event - added player movement
 function keyPressed() {
   switch (key) {
     case " ":
       advanceTime();
       break;
+    case "ArrowUp":
+      if (player.y > 0) player.y--; // Move up
+      break;
+    case "ArrowDown":
+      if (player.y < gh - 1) player.y++; // Move down
+      break;
+    case "ArrowLeft":
+      if (player.x > 0) player.x--; // Move left
+      break;
+    case "ArrowRight":
+      if (player.x < gw - 1) player.x++; // Move right
+      break;
   }
 }
 
+// Advance time and simulate enviromental changes
 function advanceTime() {
   frame++;
   simMoisture(board);
@@ -124,6 +161,12 @@ function cellDist(c1, c2){
   return(Math.abs(c1[0] - c2[0]) + Math.abs(c1[1] - c2[1]));
 }
 
+// Preload assets
+function preload() {
+  playerImg = loadImage('assets/player.png');
+}
+
+// Draw function that gets called every frame
 function draw() {
   drawBoard();
 }
