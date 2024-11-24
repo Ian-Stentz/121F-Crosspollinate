@@ -70,10 +70,6 @@ function drawBoard() {
   // Calculate the coordinates to position player in the top-right corner (adjusted for the image width)
    let playerX = playerBounds[0] + imageWidth - imageWidth * 0.45;  // top-right corner of the grid cell
    let playerY = playerBounds[1] + 10;  // top edge of the grid cell
-
-  // Calculate the coordinates to center the player to grid
-   //let playerX = playerBounds[0] + (imageWidth - imageWidth * 0.5) / 2;
-   //let playerY = playerBounds[1] + (imageHeight - imageHeight * 0.5) / 2;
  
   // Scale the image to 50% of its original size and place in the top-right corner
    let scaleFactor = 0.3;
