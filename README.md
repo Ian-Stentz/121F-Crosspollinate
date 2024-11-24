@@ -7,6 +7,7 @@ https://docs.google.com/document/d/1U30FLGgXsUcconFvlvZ_Tiv2GbogxrHIc-Jqn5xpH_Q/
 Carolyn Hope - Design Lead
 Ian Stentz - Tools Lead
 Lorraine Torres - Engine Lead
+Chase Croy-Perrett - Design Assistant Lead
 
 ## Tools and Materials
 We will be using Phaser as a 2D framework primarily because all our engineers have past experience with Phaser. Phaser’s modular structure would allow team members to focus on different aspects of the game (physics, graphics, or input handling) while maintaining smooth collaboration. Phaser 3 and its libraries also offer many built-in-tools for asset management, physics, and rendering, enabling quick prototyping and iteration. Phaser also provides extensive documentation to facilitate resource finding and troubleshooting, allowing our team to implement an efficient game.
