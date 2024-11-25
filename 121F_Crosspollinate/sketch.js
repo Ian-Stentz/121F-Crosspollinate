@@ -25,7 +25,8 @@ let board = Array(gw*gh).fill().map(u => {
   return({
     "moisture": 1,
     "sunlight": 0,
-    "crop": null
+    "crop": null,
+    "growth": 0
   })
 });
 
@@ -107,33 +108,7 @@ function keyPressed() {
 }
 
 function mouseClicked() {
-  // Code to execute when the mouse is clicked
-  //console.log("Mouse clicked!"); 
-  //console.log("mousePos is: " + mouseX + " " + mouseY);
-
-  let mousePos = {x: mouseX, y: mouseY};
-
-  let xclicked = 0; let yclicked = 0;
-  squareWidth = cw/gw; squareHeight = ch/gh;
-
-  for(let i = 0; i < gw;i++){
-    if(mousePos.x > squareWidth){
-      mousePos.x -= squareWidth;
-      xclicked += 1;
-    }
-  }
-  for(let i = 0; i < gh;i++){
-    if(mousePos.y > squareHeight){
-      mousePos.y -= squareHeight;
-      yclicked += 1;
-    }
-  }
-
-  if(xclicked < gw && yclicked < gh){
-    if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-    getBoard(board, xclicked, yclicked).crop = "crop1";
-  }
-  
+  plantCrop();
 }
 
 // Advance time and simulate enviromental changes
@@ -174,6 +149,32 @@ function simSun(board){
         getBoard(board, i, j).sunlight = roundToDec(sunshine * .4, 1);
       }
     }
+  }
+}
+
+function plantCrop(){
+
+  let mousePos = {x: mouseX, y: mouseY};
+
+  let xclicked = 0; let yclicked = 0;
+  squareWidth = cw/gw; squareHeight = ch/gh;
+
+  for(let i = 0; i < gw;i++){
+    if(mousePos.x > squareWidth){
+      mousePos.x -= squareWidth;
+      xclicked += 1;
+    }
+  }
+  for(let i = 0; i < gh;i++){
+    if(mousePos.y > squareHeight){
+      mousePos.y -= squareHeight;
+      yclicked += 1;
+    }
+  }
+
+  if(xclicked < gw && yclicked < gh){
+    if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
+    getBoard(board, xclicked, yclicked).crop = "crop1";
   }
 }
 
