@@ -18,6 +18,7 @@ let player = {
 
 // Create player marker
 let playerImg;
+let plant1Imgs;
 
 //board is represented as a 1d array to take advantage of data locality & it's easier to convert to other languages that don't have easy support for 2d arrays
 //(COUGH COUGH UNREAL)
@@ -26,7 +27,8 @@ let board = Array(gw*gh).fill().map(u => {
     "moisture": 1,
     "sunlight": 0,
     "crop": null,
-    "growth": 0
+    "growth": 0,
+    "stage": 0,
   })
 });
 
@@ -61,8 +63,9 @@ function drawBoard() {
       text("☀️: " + getBoard(board, i, j).sunlight, i*width + width/12, j*height + height/8);
       text("💧: " + getBoard(board, i, j).moisture, i*width + width/12, j*height + height/3);
       if(getBoard(board, i, j).crop != null){
-        fill("#1e833b");
-        rect(i*width+3*width/5, j*height+height/2,width/5, height/3);
+        //fill("#1e833b");
+        //rect(i*width+3*width/5, j*height+height/2,width/5, height/3);
+        drawPlant(board, i, j);
       }
     }
   }
@@ -79,6 +82,21 @@ function drawBoard() {
   // Scale the image to 50% of its original size and place in the top-right corner
    let scaleFactor = 0.3;
    image(playerImg, playerX, playerY, imageWidth * scaleFactor, imageHeight * scaleFactor);
+}
+
+function drawPlant(board, i, j){
+  if(getBoard(board, i, j).crop == "crop1"){
+    if(getBoard(board, i, j).stage == 0){
+      image(plant1Imgs[0], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
+    }
+    else if(getBoard(board, i, j).stage == 1){
+        image(plant1Imgs[1], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
+    }
+    else{
+      image(plant1Imgs[2], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
+    }
+    //else if(getBoard(board, i, j).stage == 0)
+  }
 }
 
 function setup() {
@@ -116,6 +134,7 @@ function advanceTime() {
   frame++;
   simMoisture(board);
   simSun(board);
+  simGrowth(board);
 }
 
 function simMoisture(board){
@@ -152,8 +171,24 @@ function simSun(board){
   }
 }
 
-function plantCrop(){
+function simGrowth(board){
+  for (let i = 0; i < gw; i++) {
+    for (let j = 0; j < gh; j++) {
+      if(getBoard(board, i, j).crop != null){
+        getBoard(board, i, j).growth += 
+        getBoard(board, i, j).moisture + getBoard(board, i, j).sunlight;
+        
+        if(getBoard(board, i, j).growth >= 10){
+          getBoard(board, i, j).growth= 0;
+          getBoard(board, i, j).stage += 1;
+        }
+      } 
+    }
+  }
+  
+}
 
+function plantCrop(){
   let mousePos = {x: mouseX, y: mouseY};
 
   let xclicked = 0; let yclicked = 0;
@@ -195,6 +230,10 @@ function cellDist(c1, c2){
 // Preload assets
 function preload() {
   playerImg = loadImage('assets/player.png');
+  plant1Imgs = [loadImage('assets/plant1stage0.png'), 
+    loadImage('assets/plant1stage1.png'),
+    loadImage('assets/plant1stage2.png')
+  ]
 }
 
 // Draw function that gets called every frame
