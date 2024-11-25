@@ -207,10 +207,25 @@ function plantCrop(){
     }
   }
 
-  if(xclicked < gw && yclicked < gh){
-    if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-    getBoard(board, xclicked, yclicked).crop = "crop1";
+  if(getBoard(board, xclicked, yclicked).crop == null){
+    if(xclicked < gw && yclicked < gh){
+      if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
+      getBoard(board, xclicked, yclicked).crop = "crop1";
+    }
   }
+  else if(getBoard(board, xclicked, yclicked).stage >= 2){
+    if(xclicked < gw && yclicked < gh){
+      if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
+      getBoard(board, xclicked, yclicked).crop = null;
+      getBoard(board, xclicked, yclicked).stage = 0;
+      getBoard(board, xclicked, yclicked).growth = 0;
+    }
+  }
+  
+}
+
+function harvestCrop(){
+
 }
 
 function roundToDec(num, dec){
