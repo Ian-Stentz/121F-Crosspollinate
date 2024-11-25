@@ -59,6 +59,10 @@ function drawBoard() {
       stroke("white");
       text("☀️: " + getBoard(board, i, j).sunlight, i*width + width/12, j*height + height/8);
       text("💧: " + getBoard(board, i, j).moisture, i*width + width/12, j*height + height/3);
+      if(getBoard(board, i, j).crop != null){
+        fill("#1e833b");
+        rect(i*width+3*width/5, j*height+height/2,width/5, height/3);
+      }
     }
   }
 
@@ -100,6 +104,36 @@ function keyPressed() {
       if (player.x < gw - 1) player.x++; // Move right
       break;
   }
+}
+
+function mouseClicked() {
+  // Code to execute when the mouse is clicked
+  //console.log("Mouse clicked!"); 
+  //console.log("mousePos is: " + mouseX + " " + mouseY);
+
+  let mousePos = {x: mouseX, y: mouseY};
+
+  let xclicked = 0; let yclicked = 0;
+  squareWidth = cw/gw; squareHeight = ch/gh;
+
+  for(let i = 0; i < gw;i++){
+    if(mousePos.x > squareWidth){
+      mousePos.x -= squareWidth;
+      xclicked += 1;
+    }
+  }
+  for(let i = 0; i < gh;i++){
+    if(mousePos.y > squareHeight){
+      mousePos.y -= squareHeight;
+      yclicked += 1;
+    }
+  }
+
+  if(xclicked < gw && yclicked < gh){
+    if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
+    getBoard(board, xclicked, yclicked).crop = "crop1";
+  }
+  
 }
 
 // Advance time and simulate enviromental changes
@@ -166,3 +200,4 @@ function preload() {
 function draw() {
   drawBoard();
 }
+
