@@ -16,9 +16,6 @@ let player = {
   y: 0
 };
 
-//To be replaced with type objects
-let plantTypes = ["Brambleberry", "Wheat", "Gilderberry"];
-
 // Create player marker
 let playerImg;
 let plant1Imgs;
@@ -100,54 +97,6 @@ function drawPlant(board, i, j){
     }
     //else if(getBoard(board, i, j).stage == 0)
   }
-}
-
-function setup() {
-  createCanvas(cw, ch);
-  background(220);
-}
-
-// Key press event - added player movement
-function keyPressed() {
-  switch (key) {
-    case " ":
-      advanceTime();
-      break;
-    case "w":
-    case "ArrowUp":
-      if (player.y > 0) { // Move up
-        player.y--;
-        advanceTime();
-      }
-      break;
-    case "s":
-    case "ArrowDown":
-      if (player.y < gh - 1) { // Move down
-        player.y++;
-        advanceTime();
-      }
-      break;
-    case "a":
-    case "ArrowLeft":
-      if (player.x > 0) { // Move left
-        player.x--;
-        advanceTime();
-      } 
-      break;
-    case "d":
-    case "ArrowRight":
-      if (player.x < gw - 1) { // Move right
-        player.x++;
-        advanceTime();
-      }
-      break;
-    default:
-      break;
-  }
-}
-
-function mouseClicked() {
-  plantCrop();
 }
 
 // Advance time and simulate enviromental changes
@@ -284,6 +233,79 @@ function preload() {
     loadImage('assets/plant1stage1.png'),
     loadImage('assets/plant1stage2.png')
   ]
+  plant2Imgs = [loadImage('assets/plantA-0.png'), 
+    loadImage('assets/plantA-1.png'),
+    loadImage('assets/plantA-2.png'),
+    loadImage('assets/plantA-3.png')
+  ]
+  plant3Imgs = [loadImage('assets/plantB-0.png'), 
+    loadImage('assets/plantB-1.png'),
+    loadImage('assets/plantB-2.png'),
+    loadImage('assets/plantB-3.png')
+  ]
+  //To be replaced with type objects
+  let brambleberry = new plantType(2, 2, 2, plant1Imgs);
+  let wheat = new plantType(2, 2, 2, plant2Imgs);
+  let gilderberry = new plantType(2, 2, 2, plant3Imgs);
+
+  let plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
+
+  for(let plantType of plantTypes.keys()) {
+    inventory.setPlantCount(plantType, 0);
+  }
+
+  inventory.addPlant("Wheat", 2);
+  inventory.addPlant("Wheat", 1);
+
+  console.log(inventory.getPlantCount("Wheat"));
+}
+
+function setup() {
+  createCanvas(cw, ch);
+  background(220);
+}
+
+// Key press event - added player movement
+function keyPressed() {
+  switch (key) {
+    case " ":
+      advanceTime();
+      break;
+    case "w":
+    case "ArrowUp":
+      if (player.y > 0) { // Move up
+        player.y--;
+        advanceTime();
+      }
+      break;
+    case "s":
+    case "ArrowDown":
+      if (player.y < gh - 1) { // Move down
+        player.y++;
+        advanceTime();
+      }
+      break;
+    case "a":
+    case "ArrowLeft":
+      if (player.x > 0) { // Move left
+        player.x--;
+        advanceTime();
+      } 
+      break;
+    case "d":
+    case "ArrowRight":
+      if (player.x < gw - 1) { // Move right
+        player.x++;
+        advanceTime();
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+function mouseClicked() {
+  plantCrop();
 }
 
 // Draw function that gets called every frame

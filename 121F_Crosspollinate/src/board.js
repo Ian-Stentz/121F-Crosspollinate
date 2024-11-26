@@ -1,4 +1,4 @@
-export class Board {
+class Board {
     constructor(gridWidth, gridHeight) {
         this.width = gridWidth;
         this.height = gridHeight;
