@@ -234,16 +234,30 @@ function plantCrop(){
   else if(getBoard(board, xclicked, yclicked).stage >= 2){
     if(xclicked < gw && yclicked < gh){
       if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-      getBoard(board, xclicked, yclicked)["crop"] = null;
-      getBoard(board, xclicked, yclicked).stage = 0;
-      getBoard(board, xclicked, yclicked).growth = 0;
+      //getBoard(board, xclicked, yclicked)["crop"] = null;
+      //getBoard(board, xclicked, yclicked).stage = 0;
+      //getBoard(board, xclicked, yclicked).growth = 0;
+      harvestCrop(xclicked, yclicked);
     }
   }
   
 }
 
-function harvestCrop(){
+function harvestCrop(x, y) {
+  // Check if the crop exists and is ready to harvest
+  if (getBoard(board, x, y)["crop"] != null && getBoard(board, x, y).stage >= 2) {
+    // Harvest the crop, remove it from the board
+    getBoard(board, x, y)["crop"] = null;
+    getBoard(board, x, y).stage = 0;
+    getBoard(board, x, y).growth = 0;
 
+    // Add the harvested crop to the inventory (e.g., adding "plant1")
+    inventory.addPlant("plant1", 1);  // Increase plant count in the inventory
+
+    // console testing
+    console.log("Crop harvested and added to inventory!");
+    console.log(`you have ${inventory.getPlantCount("plant1")} plant1`);
+  }
 }
 
 function roundToDec(num, dec){
@@ -273,4 +287,3 @@ function preload() {
 function draw() {
   drawBoard();
 }
-
