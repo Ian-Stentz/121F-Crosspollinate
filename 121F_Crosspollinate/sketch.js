@@ -112,19 +112,31 @@ function keyPressed() {
       break;
     case "w":
     case "ArrowUp":
-      if (player.y > 0) player.y--; // Move up
+      if (player.y > 0) { // Move up
+        player.y--;
+        advanceTime();
+      }
       break;
     case "s":
     case "ArrowDown":
-      if (player.y < gh - 1) player.y++; // Move down
+      if (player.y < gh - 1) { // Move down
+        player.y++;
+        advanceTime();
+      }
       break;
     case "a":
     case "ArrowLeft":
-      if (player.x > 0) player.x--; // Move left
+      if (player.x > 0) { // Move left
+        player.x--;
+        advanceTime();
+      } 
       break;
     case "d":
     case "ArrowRight":
-      if (player.x < gw - 1) player.x++; // Move right
+      if (player.x < gw - 1) { // Move right
+        player.x++;
+        advanceTime();
+      }
       break;
     default:
       break;
