@@ -1,3 +1,4 @@
+//honestly should be data stored in a JSON not a bunch of objects
 class plantType {
     constructor(sunReq, moistureReq, moistureConsumption, growthFrames) {
         this.sunReq = sunReq;
