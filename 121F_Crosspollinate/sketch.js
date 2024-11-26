@@ -62,7 +62,7 @@ function drawBoard() {
       stroke("white");
       text("☀️: " + getBoard(board, i, j).sunlight, i*width + width/12, j*height + height/8);
       text("💧: " + getBoard(board, i, j).moisture, i*width + width/12, j*height + height/3);
-      if(getBoard(board, i, j).crop != null){
+      if(getBoard(board, i, j)["crop"] != null){
         //fill("#1e833b");
         //rect(i*width+3*width/5, j*height+height/2,width/5, height/3);
         drawPlant(board, i, j);
@@ -110,17 +110,23 @@ function keyPressed() {
     case " ":
       advanceTime();
       break;
+    case "w":
     case "ArrowUp":
       if (player.y > 0) player.y--; // Move up
       break;
+    case "s":
     case "ArrowDown":
       if (player.y < gh - 1) player.y++; // Move down
       break;
+    case "a":
     case "ArrowLeft":
       if (player.x > 0) player.x--; // Move left
       break;
+    case "d":
     case "ArrowRight":
       if (player.x < gw - 1) player.x++; // Move right
+      break;
+    default:
       break;
   }
 }
