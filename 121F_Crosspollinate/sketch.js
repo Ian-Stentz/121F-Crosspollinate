@@ -16,6 +16,9 @@ let player = {
   y: 0
 };
 
+//To be replaced with type objects
+let plantTypes = ["Brambleberry", "Apple", ""];
+
 // Create player marker
 let playerImg;
 let plant1Imgs;
