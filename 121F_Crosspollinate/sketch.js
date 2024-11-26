@@ -85,7 +85,7 @@ function drawBoard() {
 }
 
 function drawPlant(board, i, j){
-  if(getBoard(board, i, j).crop == "crop1"){
+  if(getBoard(board, i, j)["crop"] == "crop1"){
     if(getBoard(board, i, j).stage == 0){
       image(plant1Imgs[0], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
     }
@@ -192,7 +192,7 @@ function simSun(board){
 function simGrowth(board){
   for (let i = 0; i < gw; i++) {
     for (let j = 0; j < gh; j++) {
-      if(getBoard(board, i, j).crop != null){
+      if(getBoard(board, i, j)["crop"] != null){
         getBoard(board, i, j).growth += 
         getBoard(board, i, j).moisture + getBoard(board, i, j).sunlight;
         
@@ -225,16 +225,16 @@ function plantCrop(){
     }
   }
 
-  if(getBoard(board, xclicked, yclicked).crop == null){
+  if(getBoard(board, xclicked, yclicked)["crop"] == null){
     if(xclicked < gw && yclicked < gh){
       if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-      getBoard(board, xclicked, yclicked).crop = "crop1";
+      getBoard(board, xclicked, yclicked)["crop"] = "crop1";
     }
   }
   else if(getBoard(board, xclicked, yclicked).stage >= 2){
     if(xclicked < gw && yclicked < gh){
       if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-      getBoard(board, xclicked, yclicked).crop = null;
+      getBoard(board, xclicked, yclicked)["crop"] = null;
       getBoard(board, xclicked, yclicked).stage = 0;
       getBoard(board, xclicked, yclicked).growth = 0;
     }
