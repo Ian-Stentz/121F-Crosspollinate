@@ -90,7 +90,7 @@ function drawPlant(board, i, j){
       image(plant1Imgs[0], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
     }
     else if(getBoard(board, i, j).stage == 1){
-        image(plant1Imgs[1], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
+      image(plant1Imgs[1], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
     }
     else{
       image(plant1Imgs[2], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
