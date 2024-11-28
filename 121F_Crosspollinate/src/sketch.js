@@ -19,6 +19,9 @@ let player = {
 // Create player marker
 let playerImg;
 let plant1Imgs;
+let plantTypes;
+let currentSeed = "Wheat";
+let seedPacket = [];
 
 //board is represented as a 1d array to take advantage of data locality & it's easier to convert to other languages that don't have easy support for 2d arrays
 //(COUGH COUGH UNREAL)
@@ -31,6 +34,9 @@ let board = Array(gw*gh).fill().map(u => {
     "stage": 0,
   })
 });
+
+preload();
+
 
 //I anticipate there will be either different boards to represent different things or 1 board that contains a lot of data on it.
 //The latter will probably be easier to convert to typescript, but might be less efficient and less clean
@@ -85,17 +91,10 @@ function drawBoard() {
 }
 
 function drawPlant(board, i, j){
-  if(getBoard(board, i, j)["crop"] == "crop1"){
-    if(getBoard(board, i, j).stage == 0){
-      image(plant1Imgs[0], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
-    }
-    else if(getBoard(board, i, j).stage == 1){
-      image(plant1Imgs[1], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
-    }
-    else{
-      image(plant1Imgs[2], (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
-    }
-    //else if(getBoard(board, i, j).stage == 0)
+  if(getBoard(board, i, j)["crop"] != null){
+    //console.log(getBoard(board, i, j).growth);
+    image(plantTypes.get(getBoard(board, i, j)["crop"]).getGrowthStage(getBoard(board, i, j).growth), (i + 0.3)*cw/gw, (j + 0.3)*ch/gh, 60, 60);
+    
   }
 }
 
@@ -122,7 +121,7 @@ function simMoisture(board){
 function simSun(board){
   const sunshine = randRange(MIN_SUN, MAX_SUN);
   const randTile = [Math.round(randRange(0, gw-1)), Math.round(randRange(0, gh-1))];
-  console.log(randTile);
+  //console.log(randTile);
   for (let i = 0; i < gw; i++) {
     for (let j = 0; j < gh; j++) {
       if(cellDist(randTile, [i,j]) == 0){
@@ -145,13 +144,19 @@ function simGrowth(board){
   for (let i = 0; i < gw; i++) {
     for (let j = 0; j < gh; j++) {
       if(getBoard(board, i, j)["crop"] != null){
-        getBoard(board, i, j).growth += 
-        getBoard(board, i, j).moisture + getBoard(board, i, j).sunlight;
         
-        if(getBoard(board, i, j).growth >= 10){
-          getBoard(board, i, j).growth= 0;
-          getBoard(board, i, j).stage += 1;
+        if(plantTypes.get(getBoard(board, i, j)["crop"]).canGrow(getBoard(board, i, j).sunlight, getBoard(board, i, j).moisture, getBoard(board, i, j).growth) ){
+          //console.log("growing")
+          getBoard(board, i, j).moisture -= plantTypes.get(getBoard(board, i, j)["crop"]).moistureConsumption;
+          getBoard(board, i, j).growth++;
         }
+
+        //console.log(getBoard(board, i, j).growth + ", max: " + plantTypes.get(getBoard(board, i, j)["crop"]).getLastStage());
+        
+        if(getBoard(board, i, j).growth > plantTypes.get(getBoard(board, i, j)["crop"]).getLastStage()){
+          getBoard(board, i, j).growth = plantTypes.get(getBoard(board, i, j)["crop"]).getLastStage();
+        }
+        //drawPlant()
       } 
     }
   }
@@ -179,16 +184,15 @@ function plantCrop(){
 
   if(getBoard(board, xclicked, yclicked)["crop"] == null){
     if(xclicked < gw && yclicked < gh){
-      if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-      getBoard(board, xclicked, yclicked)["crop"] = "crop1";
+      if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1){
+        getBoard(board, xclicked, yclicked)["crop"] = currentSeed;
+        advanceTime();
+      }
     }
   }
-  else if(getBoard(board, xclicked, yclicked).stage >= 2){
+  else if(getBoard(board, xclicked, yclicked)["crop"] != null){
     if(xclicked < gw && yclicked < gh){
       if(Math.abs(player.x - xclicked) <= 1 && Math.abs(player.y - yclicked) <= 1)
-      //getBoard(board, xclicked, yclicked)["crop"] = null;
-      //getBoard(board, xclicked, yclicked).stage = 0;
-      //getBoard(board, xclicked, yclicked).growth = 0;
       harvestCrop(xclicked, yclicked);
     }
   }
@@ -197,18 +201,22 @@ function plantCrop(){
 
 function harvestCrop(x, y) {
   // Check if the crop exists and is ready to harvest
-  if (getBoard(board, x, y)["crop"] != null && getBoard(board, x, y).stage >= 2) {
+  //console.log(`Max growth ${plantTypes.get(getBoard(board, x, y)["crop"]).getLastStage()}, currently ${getBoard(board, x, y).growth}`);
+  if (getBoard(board, x, y)["crop"] != null && getBoard(board, x, y).growth >= plantTypes.get(getBoard(board, x, y)["crop"]).getLastStage()) {
+    
+    // Add the harvested crop to the inventory (e.g., adding "plant1")
+    inventory.addPlant(getBoard(board, x, y)["crop"], 1);  // Increase plant count in the inventory
+    
+    // console testing  
+    console.log("Crop harvested and added to inventory!");
+    console.log(`you have ${inventory.getPlantCount(getBoard(board, x, y)["crop"])} ` + getBoard(board, x, y)["crop"]);
+
     // Harvest the crop, remove it from the board
     getBoard(board, x, y)["crop"] = null;
     getBoard(board, x, y).stage = 0;
     getBoard(board, x, y).growth = 0;
-
-    // Add the harvested crop to the inventory (e.g., adding "plant1")
-    inventory.addPlant("plant1", 1);  // Increase plant count in the inventory
-
-    // console testing
-    console.log("Crop harvested and added to inventory!");
-    console.log(`you have ${inventory.getPlantCount("plant1")} plant1`);
+    
+    advanceTime();
   }
 }
 
@@ -244,20 +252,21 @@ function preload() {
     loadImage('assets/plantB-3.png')
   ]
   //To be replaced with type objects
-  let brambleberry = new plantType(2, 2, 2, plant1Imgs);
-  let wheat = new plantType(2, 2, 2, plant2Imgs);
-  let gilderberry = new plantType(2, 2, 2, plant3Imgs);
+  let brambleberry = new plantType(.7, 2.5, 1.5, plant1Imgs);
+  let wheat = new plantType(1, 2, 1, plant2Imgs);
+  let gilderberry = new plantType(.4, 4, 2.5, plant3Imgs);
 
-  let plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
+  plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
+  seedPacket = ["Brambleberry", "Wheat", "Gilderberry"];
 
   for(let plantType of plantTypes.keys()) {
     inventory.setPlantCount(plantType, 0);
   }
 
-  inventory.addPlant("Wheat", 2);
-  inventory.addPlant("Wheat", 1);
+  //inventory.addPlant("Brambleberry", 2);
+  //inventory.addPlant("Brambleberry", 1);
 
-  console.log(inventory.getPlantCount("Wheat"));
+  //console.log(inventory.getPlantCount("Wheat"));
 }
 
 function setup() {
@@ -298,6 +307,18 @@ function keyPressed() {
         player.x++;
         advanceTime();
       }
+      break;
+    case "1":
+      currentSeed = "Brambleberry";
+      console.log("Now planting Brambleberry");
+      break;
+    case "2":
+      currentSeed = "Wheat";
+      console.log("Now planting Wheat");
+      break;
+    case "3":
+      currentSeed = "Gilderberry";
+      console.log("Now planting Gilderberry");
       break;
     default:
       break;
