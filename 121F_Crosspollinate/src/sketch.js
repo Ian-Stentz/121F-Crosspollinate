@@ -327,12 +327,49 @@ function mouseClicked() {
   plantCrop();
 }
 
+let gameWon = false;  // Flag to track if the game is won
+
 // Draw function that gets called every frame
 function draw() {
   drawBoard();
+  
+  // If the game is won, display the win message
+  if (!gameWon) {
+    checkWinState();  // Check for win condition every frame
+  }
+  
+  // If the game is won, display the "You win!" message
+  if (gameWon) {
+    displayWinMessage();
+  }
 }
 
-function winState() {
-  //this.input.keyboard.enabled = false;
-  //this.add.text(cw/2, ch/2, "You Win", {displayOriginX : 0.5, displayOriginY : 0.5})
+function checkWinState() {
+  // Check if the player has at least one of each plant type
+  const requiredPlants = ["Brambleberry", "Wheat", "Gilderberry"];
+  let hasAllPlants = true;
+
+  for (let plant of requiredPlants) {
+    if (inventory.getPlantCount(plant) < 1) {
+      hasAllPlants = false;
+      break;
+    }
+  }
+
+  // If the player has all required plants, log the win message and set gameWon flag
+  if (hasAllPlants) {
+    console.log("You win!");
+    gameWon = true;  // Set win flag to true
+    noLoop();  // Stops the game loop (optional, to freeze the game)
+  }
+}
+
+function displayWinMessage() {
+  // Set up text style
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  fill(255, 0, 0);  // Red color for the win message
+
+  // Display the "You win!" message in the center of the canvas
+  text("You win!", cw / 2, ch / 2); 
 }
