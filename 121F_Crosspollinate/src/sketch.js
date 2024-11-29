@@ -236,6 +236,11 @@ function cellDist(c1, c2){
 
 // Preload assets
 function preload() {
+}
+
+function setup() {
+  createCanvas(cw, ch);
+  background(220);
   playerImg = loadImage('assets/player.png');
   plant1Imgs = [loadImage('assets/plant1stage0.png'), 
     loadImage('assets/plant1stage1.png'),
@@ -262,16 +267,6 @@ function preload() {
   for(let plantType of plantTypes.keys()) {
     inventory.setPlantCount(plantType, 0);
   }
-
-  //inventory.addPlant("Brambleberry", 2);
-  //inventory.addPlant("Brambleberry", 1);
-
-  //console.log(inventory.getPlantCount("Wheat"));
-}
-
-function setup() {
-  createCanvas(cw, ch);
-  background(220);
 }
 
 // Key press event - added player movement
@@ -320,6 +315,9 @@ function keyPressed() {
       currentSeed = "Gilderberry";
       console.log("Now planting Gilderberry");
       break;
+    case "e":
+      winState();
+      break;
     default:
       break;
   }
@@ -332,4 +330,9 @@ function mouseClicked() {
 // Draw function that gets called every frame
 function draw() {
   drawBoard();
+}
+
+function winState() {
+  //this.input.keyboard.enabled = false;
+  //this.add.text(cw/2, ch/2, "You Win", {displayOriginX : 0.5, displayOriginY : 0.5})
 }
