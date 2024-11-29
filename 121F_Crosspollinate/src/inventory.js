@@ -22,6 +22,19 @@ const inventory = {
       if (this.plants[id]) {
         this.plants[id] = Math.max(this.plants[id] - count, 0);
       }
+    },
+
+    //implementation varies with the rules of the win condition
+    //currently checks if the inv contains one of each plant
+    checkWinConditions: function(plantTypeKeys) {
+      let winCondition = true;
+      for (let key of plantTypeKeys) {
+        if (this.getPlantCount(key) < 1) {
+          winCondition = false;
+          break;
+        }
+      }
+      return winCondition
     }
   };
 
