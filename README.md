@@ -1,6 +1,8 @@
 Collaborative Version : 
 https://docs.google.com/document/d/1U30FLGgXsUcconFvlvZ_Tiv2GbogxrHIc-Jqn5xpH_Q/edit?usp=sharing
 
+Asset Credit: [Sprout Lands - Asset Pack by Cup Nooble](https://cupnooble.itch.io/sprout-lands-asset-pack)
+
 # Devlog Entry #1 - 11/17/2024
 
 ## Introducing the Team
