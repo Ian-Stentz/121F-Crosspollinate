@@ -8,19 +8,9 @@ let config = {
     render: {
         pixelArt: true
     },
-    physics: {
-        default: 'arcade',
-        arcade: {
-            //debug: true,
-            gravity: {
-                x: 0,
-                y: 0
-            }
-        }
-    },
     width: 600,
     height: 600,
-    scene: [Load, Platformer]
+    scene: [Load, Menu, Farm]
 }
 
 const game = new Phaser.Game(config);
