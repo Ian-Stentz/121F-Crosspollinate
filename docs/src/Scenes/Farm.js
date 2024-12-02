@@ -169,16 +169,13 @@ class Farm extends Phaser.Scene {
             if(this.board.getEntry(i, j)["crop"] != null){
               if(plantTypes[(this.board.getEntry(i, j)["crop"])].canGrow(this.board.getEntry(i, j).sunlight, this.board.getEntry(i, j).moisture, this.board.getEntry(i, j).growth) ){
                 //console.log("growing")
-                this.board.getEntry(i, j).moisture -= plantTypes[(this.board.getEntry(i, j)["crop"])].moistureConsumption;
-                this.board.getEntry(i, j).growth++;
+                if(this.board.getEntry(i, j).growth < plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage()){
+                    this.board.getEntry(i, j).moisture -= plantTypes[(this.board.getEntry(i, j)["crop"])].moistureConsumption;
+                    this.board.getEntry(i, j).growth++;
+                    console.log(this.crops[[i,j].toString()]);
+                    this.crops[[i,j].toString()].setStage(this.board.getEntry(i, j).growth);
+                }
               }
-      
-              //console.log(getBoard(board, i, j).growth + ", max: " + plantTypes.get(getBoard(board, i, j)["crop"]).getLastStage());
-              
-              if(this.board.getEntry(i, j).growth > plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage()){
-                this.board.getEntry(i, j).growth = plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage();
-              }
-              //drawPlant()
             } 
           }
         }

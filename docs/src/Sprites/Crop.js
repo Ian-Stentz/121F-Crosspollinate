@@ -11,7 +11,7 @@ class Crop extends Phaser.GameObjects.Sprite {
     }
 
     setStage(stage) {
-        this.texture = textureList[stage];
+        this.setTexture(this.stages[stage]);
     }
 
     remove() {
