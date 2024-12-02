@@ -13,6 +13,7 @@ let config = {
 
 const game = new Phaser.Game(config);
 const my = {crops : {}};
+const tileDim = { width: 6, height :6};
 let plantTypes;
 
 const MIN_SUN = 1;

@@ -23,20 +23,37 @@ class Farm extends Phaser.Scene {
         //   inventory.setPlantCount(plantType, 0);
         // }
 
+        this.board = new Board(tileDim.width, tileDim.height);
+        this.playerLoc = {
+            x: 0,
+            y: 0
+        }
         this.frame = 0;
     }
 
     create() {
         //creation of world objects goes here
-        this.board = new Board(6, 6);
+        this.tileWidth = game.config.width/this.board.width;
+        this.tileHeight = game.config.height/this.board.height;
 
         this.drawBoard();
 
-        this.input.keyboard.on('keydown-SPACE', () => {this.sunUpdate(0, 1, 5)}, this);
-
         //my.player = this.add.image(0, 0, "player");
         my.player = new Player(this, 0, 0, "player", null);
-        //my.player.setScale(0.3, 0.3);
+        //636x1462
+        let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
+        my.player.setScale(playerScale, playerScale); 
+        this.movePlayerPos(my.player, 0, 0);
+
+        //inputs
+        this.input.keyboard.on('keydown-SPACE', () => {this.tick()}, this);
+        this.input.keyboard.on('keydown-W', () => {this.movePlayerDir(my.player, [0, -1])}, this);
+        this.input.keyboard.on('keydown-A', () => {this.movePlayerDir(my.player, [-1, 0])}, this);
+        this.input.keyboard.on('keydown-S', () => {this.movePlayerDir(my.player, [0, 1])}, this);
+        this.input.keyboard.on('keydown-D', () => {this.movePlayerDir(my.player, [1, 0])}, this);
+
+        //debug input
+        this.input.keyboard.on('keydown-P', () => {this.sunUpdate(0, 1, 5)}, this);
     }
 
     tick() {
@@ -49,11 +66,9 @@ class Farm extends Phaser.Scene {
 
     //helper functions go here
     drawBoard() {
-        let tileWidth = game.config.width/this.board.width;
-        let tileHeight = game.config.height/this.board.height;
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
-                let newRect = this.add.rectangle(i*tileWidth, j*tileHeight, tileWidth, tileHeight, 0x118c13, 1);
+                let newRect = this.add.rectangle(i*this.tileWidth, j*this.tileHeight, this.tileWidth, this.tileHeight, 0x118c13, 1);
                 newRect.setOrigin(0)
                 newRect.setStrokeStyle(3, 0x000000);
                 let fontSize = 14;
@@ -65,15 +80,33 @@ class Farm extends Phaser.Scene {
                         left: padding,
                         top: padding,
                     }}
-                let sunText = this.add.text(i*tileWidth, j*tileHeight, "☀️: " + this.board.getEntry(i, j).sunlight, fontSettings).setOrigin(0);
+                let sunText = this.add.text(i*this.tileWidth, j*this.tileHeight, "☀️: " + this.board.getEntry(i, j).sunlight, fontSettings).setOrigin(0);
                 this.eventEmitter.on("sunUpdate" + i + j, (newSun) => {
                     sunText.text = "☀️: " + newSun;
                 }, this)
-                let waterText = this.add.text(i*tileWidth + 2, j*tileHeight + fontSize + padding, "💧: " + this.board.getEntry(i, j).moisture, fontSettings).setOrigin(0);
+                let waterText = this.add.text(i*this.tileWidth + 2, j*this.tileHeight + fontSize + padding, "💧: " + this.board.getEntry(i, j).moisture, fontSettings).setOrigin(0);
                 //if(this.board.getEntry(i, j)["crop"] != null) {
                 //drawPlant(board, i, j);
                 //}
             }
+        }
+    }
+
+    //moves player directly to Tile
+    movePlayerPos(player, u, v) {
+        this.playerLoc.x = u;
+        this.playerLoc.y = v;
+        let [x, y] = [u * this.tileWidth + this.tileWidth * 3 / 4, v * this.tileHeight + this.tileHeight / 4];
+        player.move(x, y);
+    }
+
+    //moves player with suggestion of dir, handles collision and time progression
+    movePlayerDir(player, dir) {
+        let newX = this.playerLoc.x + dir[0];
+        let newY = this.playerLoc.y + dir[1];
+        if(newX >= 0 && newX < this.board.width && newY >= 0 && newY < this.board.height) {
+            this.movePlayerPos(player, newX, newY);
+            this.tick();
         }
     }
 

@@ -13,4 +13,8 @@ class Player extends Phaser.GameObjects.Sprite {
         this.x = x;
         this.y = y;
     }
+
+    tileToOrigin(i, j, tileWidth, tileHeight) {
+        return [i * tileWidth + tileWidth * 3 / 4, j * tileHeight + tileHeight / 4];
+    }
 }
