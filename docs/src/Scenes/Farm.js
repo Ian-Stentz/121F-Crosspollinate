@@ -51,14 +51,14 @@ class Farm extends Phaser.Scene {
         this.movePlayerPos(my.player, 0, 0);
 
         //inputs
-        this.input.keyboard.on('keydown-SPACE', () => {this.tick()}, this);
-        this.input.keyboard.on('keydown-W', () => {this.movePlayerDir(my.player, [0, -1])}, this);
-        this.input.keyboard.on('keydown-A', () => {this.movePlayerDir(my.player, [-1, 0])}, this);
-        this.input.keyboard.on('keydown-S', () => {this.movePlayerDir(my.player, [0, 1])}, this);
-        this.input.keyboard.on('keydown-D', () => {this.movePlayerDir(my.player, [1, 0])}, this);
+        this.input.keyboard.on('keydown-SPACE', () => {if(!this.gameFrozen) {this.tick()}}, this);
+        this.input.keyboard.on('keydown-W', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [0, -1])}}, this);
+        this.input.keyboard.on('keydown-A', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [-1, 0])}}, this);
+        this.input.keyboard.on('keydown-S', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [0, 1])}}, this);
+        this.input.keyboard.on('keydown-D', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [1, 0])}}, this);
         this.input.on('pointerdown', (e) => {
             if(e.button == 0) {
-                this.plantCrop(e.x, e.y);
+                if(!this.gameFrozen) {this.plantCrop(e.x, e.y)};
             }
         });
         this.input.keyboard.on(`keydown-ONE`, () => {this.currentSeed = 0}, this);
@@ -67,6 +67,8 @@ class Farm extends Phaser.Scene {
 
         //debug input
         this.input.keyboard.on('keydown-P', () => {this.textUpdate(this.playerLoc.x, this.playerLoc.y, 5, 2)}, this);
+
+        this.eventEmitter.on("checkWin", () => {this.checkWinCon()}, this);
     }
 
     tick() {
@@ -172,7 +174,6 @@ class Farm extends Phaser.Scene {
                 if(this.board.getEntry(i, j).growth < plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage()){
                     this.board.getEntry(i, j).moisture -= plantTypes[(this.board.getEntry(i, j)["crop"])].moistureConsumption;
                     this.board.getEntry(i, j).growth++;
-                    console.log(this.crops[[i,j].toString()]);
                     this.crops[[i,j].toString()].setStage(this.board.getEntry(i, j).growth);
                 }
               }
@@ -194,12 +195,12 @@ class Farm extends Phaser.Scene {
       
         if(cellDistOctal([this.playerLoc.x, this.playerLoc.y], [u, v]) <= 1){
             if(this.board.getEntry(u, v)["crop"] == null){
+                this.tick();
                 this.board.getEntry(u, v)["crop"] = this.currentSeed;
                 let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[this.currentSeed].growthFrames, 0);
                 let plantScale = (this.tileWidth) / (newCrop.width * 2);
                 newCrop.setScale(plantScale, plantScale);
-                this.crops[[u,v].toString()] = newCrop;
-                this.tick();
+                this.crops[[u,v].toString()] = newCrop;1
             } else {
                 this.harvestCrop(u, v);
             }
@@ -207,6 +208,27 @@ class Farm extends Phaser.Scene {
     }
     
     harvestCrop(u, v) {
-        console.log("crop harvested");
+        if(this.board.getEntry(u, v).growth == plantTypes[(this.board.getEntry(u, v)["crop"])].getLastStage()) {
+            this.crops[[u,v].toString()].remove();
+            inventory.addPlant(this.board.getEntry(u, v)["crop"], 1);
+            this.board.getEntry(u, v).crop = null
+            this.board.getEntry(u, v).growth = 0
+            this.eventEmitter.emit("checkWin");
+        }
+    }
+
+    checkWinCon() {
+        if(inventory.checkWinConditions([0, 1, 2])) {
+            this.gameFrozen = true;
+            let fontSettings = {
+                fontFamily: 'utf-8',
+                fontSize: `64px`,
+                align: 'center',
+                color: '#f00',
+                stroke: '#8ff',
+                strokeThickness: 4
+            }
+            this.add.text(game.config.width / 2, game.config.height / 2, "You Win!", fontSettings).setOrigin(0.5);
+        }
     }
 }
