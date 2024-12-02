@@ -9,11 +9,12 @@ class Board {
               "crop": null,
               "growth": 0,
               "stage": 0,
-            })});
+            })
+        });
     }
 
     toIndex(i, j) {
-        return j * gw + i
+        return j * this.width + i
     }
 
     getEntry(i, j) {

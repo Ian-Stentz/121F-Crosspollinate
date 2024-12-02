@@ -5,12 +5,17 @@
 let config = {
     parent: 'phaser-game',
     type: Phaser.WEBGL,
-    render: {
-        pixelArt: true
-    },
     width: 600,
     height: 600,
+    backgroundColor: `#ffffff`,
     scene: [Load, Menu, Farm]
 }
 
 const game = new Phaser.Game(config);
+const my = {crops : {}};
+let plantTypes;
+
+const MIN_SUN = 1;
+const MAX_SUN = 2;
+const WATER_COEFFICIENT = 1.2;
+const MAX_WATER = 5;
