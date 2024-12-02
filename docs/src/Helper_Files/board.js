@@ -2,6 +2,7 @@ class Board {
     constructor(gridWidth, gridHeight) {
         this.width = gridWidth;
         this.height = gridHeight;
+        //TODO: override if saved bytearray / overload the constructor
         this.board = Array(gridWidth*gridHeight).fill().map(u => {
             return ({
               "moisture": 1,
