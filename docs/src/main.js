@@ -19,7 +19,15 @@ const my = {crops : {}};
 const tileDim = { width: 6, height :6};
 let plantTypes;
 
-const MIN_SUN = 1;
-const MAX_SUN = 2;
-const WATER_COEFFICIENT = 1.2;
-const MAX_WATER = 5;
+const MIN_SUN = 0;
+const MAX_SUN = 20;
+const WATER_COEFFICIENT = 12;
+const MAX_WATER = 50;
+
+const FRAME_BYTES = 2;
+const COORD_BYTES = 2;
+const SUN_BYTES = 1;
+const MOIST_BYTES = 1;
+const CROP_BYTES = 1;
+const GROWTH_BYTES = 1;
+const ENTRY_BYTES = SUN_BYTES + MOIST_BYTES + CROP_BYTES + GROWTH_BYTES;

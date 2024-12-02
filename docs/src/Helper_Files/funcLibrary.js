@@ -3,6 +3,11 @@ function randRange(min, max){
     return(min + (Math.random() * dif));
 }
 
+//inclusive min and max
+function randIntRange(min, max) {
+    return Math.floor(randRange(min, max + 1));
+}
+
 function roundToDec(num, dec){
     const e = 10 ** dec;
     return(Math.round(num*e)/e)

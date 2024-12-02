@@ -12,9 +12,9 @@ class Farm extends Phaser.Scene {
 
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
-        let brambleberry = new plantType(.7, 2.5, 1.5, my.crops.plantA);
-        let wheat = new plantType(1, 2, 1, my.crops.plantB);
-        let gilderberry = new plantType(.4, 4, 2.5, my.crops.plantC); 
+        let brambleberry = new plantType(7, 25, 15, my.crops.plantA);
+        let wheat = new plantType(10, 20, 10, my.crops.plantB);
+        let gilderberry = new plantType(4, 40, 25, my.crops.plantC); 
 
         // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
         // seedPacket = Array.from(plantTypes.keys());
@@ -29,11 +29,9 @@ class Farm extends Phaser.Scene {
 
         //TODO: all of below should be moved to byte array
         this.board = new Board(tileDim.width, tileDim.height);
-        this.playerLoc = {
-            x: 0,
-            y: 0
-        }
-        this.frame = 0;
+        this.board.init();
+        this.board.setCurFrame(0);
+        this.board.setPlayerLoc(0, 0);
     }
 
     create() {
@@ -66,7 +64,7 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on(`keydown-THREE`, () => {this.currentSeed = 2}, this);
 
         //debug input
-        this.input.keyboard.on('keydown-P', () => {this.textUpdate(this.playerLoc.x, this.playerLoc.y, 5, 2)}, this);
+        this.input.keyboard.on('keydown-P', () => {let loc = this.board.getPlayerLoc(); this.textUpdate(loc.x, loc.y, 5, 2)}, this);
 
         this.eventEmitter.on("checkWin", () => {this.checkWinCon()}, this);
     }
@@ -74,15 +72,14 @@ class Farm extends Phaser.Scene {
     tick() {
         //no update, only our turn-based tick
         this.frame++;
-        this.simSun();
-        this.simMoisture();
-        this.simGrowth();
+        this.simCells();
     }
 
     //helper functions go here
     drawBoard() {
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
+                let curEntry = this.board.getEntry(i, j);
                 let newRect = this.add.rectangle(i*this.tileWidth, j*this.tileHeight, this.tileWidth, this.tileHeight, 0x118c13, 1);
                 newRect.setOrigin(0)
                 newRect.setStrokeStyle(3, 0x000000);
@@ -95,108 +92,76 @@ class Farm extends Phaser.Scene {
                         left: padding,
                         top: padding,
                     }}
-                let sunText = this.add.text(i*this.tileWidth, j*this.tileHeight, "☀️: " + this.board.getEntry(i, j).sunlight, fontSettings).setOrigin(0);
-                //TODO: change to simply lookup the sun on the board
-                this.eventEmitter.on("sunUpdate" + i + j, (newSun) => {
-                    sunText.text = "☀️: " + newSun;
+                let sunText = this.add.text(i*this.tileWidth, j*this.tileHeight, "☀️: " + curEntry.getSunlight(), fontSettings).setOrigin(0);
+                let waterText = this.add.text(i*this.tileWidth + 2, j*this.tileHeight + fontSize + padding, "💧: " + curEntry.getMoisture(), fontSettings).setOrigin(0);
+                this.eventEmitter.on("updateCell" + i + j, () => {
+                    let entry = this.board.getEntry(i, j);
+                    sunText.text = "☀️: " + entry.getSunlight();
+                    waterText.text = "💧: " + entry.getMoisture();
                 }, this)
-                let waterText = this.add.text(i*this.tileWidth + 2, j*this.tileHeight + fontSize + padding, "💧: " + this.board.getEntry(i, j).moisture, fontSettings).setOrigin(0);
-                this.eventEmitter.on("moistureUpdate" + i + j, (newMoisture) => {
-                    waterText.text = "💧: " + newMoisture;
-                }, this)
-                //if(this.board.getEntry(i, j)["crop"] != null) {
-                //drawPlant(board, i, j);
-                //}
             }
         }
     }
 
     //moves player directly to Tile
     movePlayerPos(player, u, v) {
-        this.playerLoc.x = u;
-        this.playerLoc.y = v;
+        this.board.setPlayerLoc(u, v);
         let [x, y] = [u * this.tileWidth + this.tileWidth * 3 / 4, v * this.tileHeight + this.tileHeight / 4];
         player.move(x, y);
     }
 
     //moves player with suggestion of dir, handles collision and time progression
     movePlayerDir(player, dir) {
-        let newX = this.playerLoc.x + dir[0];
-        let newY = this.playerLoc.y + dir[1];
+        let curLoc = this.board.getPlayerLoc();
+        let newX = curLoc.x + dir[0];
+        let newY = curLoc.y + dir[1];
         if(newX >= 0 && newX < this.board.width && newY >= 0 && newY < this.board.height) {
             this.movePlayerPos(player, newX, newY);
             this.tick();
         }
     }
 
-    simMoisture(){
+    simCells(){
+        const highestSunshine = randIntRange((MAX_SUN + MIN_SUN) / 2, MAX_SUN);
+        const randTile = [randIntRange(0, this.board.width), randIntRange(0, this.board.height)];
+        console.log(highestSunshine);
+        console.log(randTile);
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
-                this.board.getEntry(i, j).moisture += Math.random() * WATER_COEFFICIENT;
-                this.board.getEntry(i, j).moisture = roundToDec(this.board.getEntry(i, j).moisture, 1);
-                if(this.board.getEntry(i, j).moisture > MAX_WATER){
-                    this.board.getEntry(i, j).moisture = MAX_WATER;
+                //Load Entry
+                let curEntry = this.board.getEntry(i, j);
+                //Moisture Simulation
+                curEntry.setMoisture(Math.min(curEntry.getMoisture() + Math.floor(Math.random() * WATER_COEFFICIENT), MAX_WATER));
+
+                //Sunshine Simulation
+                curEntry.setSunlight(Math.max(MIN_SUN, Math.round(highestSunshine * Math.max(0.4, (1 - (cellDistManhattan(randTile, [i,j]) * 0.1))))));
+
+                this.textUpdate(i, j);
+
+                //Growth Simulation
+                if(curEntry.getCrop() != undefined){
+                    if(plantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth()) ){
+                        curEntry.setMoisture(curEntry.getMoisture() - plantTypes[curEntry.getCrop()].moistureConsumption);
+                        curEntry.setGrowth(curEntry.getGrowth() + 1);
+                        this.crops[[i,j].toString()].setStage(curEntry.getGrowth());
+                    }
                 }
-                this.moistureUpdate(i, j, this.board.getEntry(i, j).moisture);
             }
         }
       }
-      
-    simSun(){
-        const sunshine = randRange(MIN_SUN, MAX_SUN);
-        const randTile = [Math.round(randRange(0,this.board.width-1)), Math.round(randRange(0, this.board.height-1))];
-        //console.log(randTile);
-        for (let i = 0; i < this.board.width; i++) {
-            for (let j = 0; j < this.board.height; j++) {
-                if(cellDistManhattan(randTile, [i,j]) == 0){
-                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * 1, 1);
-                }
-                else if(cellDistManhattan(randTile, [i,j]) == 1){
-                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .8, 1);
-                }
-                else if(cellDistManhattan(randTile, [i,j]) == 2){
-                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .6, 1);
-                }
-                else{
-                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .4, 1);
-                }
-                this.sunUpdate(i, j, this.board.getEntry(i, j).sunlight);
-            }
-        }
-    }
-      
-    simGrowth(){
-        for (let i = 0; i < this.board.width; i++) {
-          for (let j = 0; j < this.board.height; j++) {
-            if(this.board.getEntry(i, j)["crop"] != null){
-              if(plantTypes[(this.board.getEntry(i, j)["crop"])].canGrow(this.board.getEntry(i, j).sunlight, this.board.getEntry(i, j).moisture, this.board.getEntry(i, j).growth) ){
-                //console.log("growing")
-                if(this.board.getEntry(i, j).growth < plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage()){
-                    this.board.getEntry(i, j).moisture -= plantTypes[(this.board.getEntry(i, j)["crop"])].moistureConsumption;
-                    this.board.getEntry(i, j).growth++;
-                    this.crops[[i,j].toString()].setStage(this.board.getEntry(i, j).growth);
-                }
-              }
-            } 
-          }
-        }
-        }
 
-    sunUpdate(x, y, newSun) {
-        this.eventEmitter.emit("sunUpdate" + x + y, newSun);
-    }
-
-    moistureUpdate(x, y, newMoisture) {
-        this.eventEmitter.emit("moistureUpdate" + x + y, newMoisture);
+    textUpdate(x, y) {
+        this.eventEmitter.emit("updateCell" + x + y);
     }
 
     plantCrop(mx, my){
         let [u, v] = [Math.floor(mx / this.tileWidth), Math.floor(my / this.tileHeight)];
-      
-        if(cellDistOctal([this.playerLoc.x, this.playerLoc.y], [u, v]) <= 1){
-            if(this.board.getEntry(u, v)["crop"] == null){
+        let curLoc = this.board.getPlayerLoc()
+        let entry = this.board.getEntry(u, v);
+        if(cellDistOctal([curLoc.x, curLoc.y], [u, v]) <= 1){
+            if(entry.getCrop() == undefined){
                 this.tick();
-                this.board.getEntry(u, v)["crop"] = this.currentSeed;
+                entry.setCrop(this.currentSeed);
                 let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[this.currentSeed].growthFrames, 0);
                 let plantScale = (this.tileWidth) / (newCrop.width * 2);
                 newCrop.setScale(plantScale, plantScale);
@@ -208,11 +173,12 @@ class Farm extends Phaser.Scene {
     }
     
     harvestCrop(u, v) {
-        if(this.board.getEntry(u, v).growth == plantTypes[(this.board.getEntry(u, v)["crop"])].getLastStage()) {
+        let entry = this.board.getEntry(u, v);
+        if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
             this.crops[[u,v].toString()].remove();
-            inventory.addPlant(this.board.getEntry(u, v)["crop"], 1);
-            this.board.getEntry(u, v).crop = null
-            this.board.getEntry(u, v).growth = 0
+            inventory.addPlant(entry.getCrop(), 1);
+            entry.setCrop(undefined);
+            entry.setGrowth(0);
             this.eventEmitter.emit("checkWin");
         }
     }

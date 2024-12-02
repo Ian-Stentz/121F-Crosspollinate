@@ -2,16 +2,45 @@ class Board {
     constructor(gridWidth, gridHeight) {
         this.width = gridWidth;
         this.height = gridHeight;
+        
         //TODO: override if saved bytearray / overload the constructor
-        this.board = Array(gridWidth*gridHeight).fill().map(u => {
-            return ({
-              "moisture": 1,
-              "sunlight": 0,
-              "crop": null,
-              "growth": 0,
-              "stage": 0,
-            })
-        });
+        this.board = new ArrayBuffer(FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES);
+
+        this.frameView = new DataView(this.board, 0, FRAME_BYTES);
+        this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
+    }
+
+    init() {
+        for(let i = 0; i < this.width; i++) {
+            for(let j = 0; j < this.height; j++) {
+                let curEntry = this.getEntry(i, j);
+                curEntry.setSunlight(10);
+                curEntry.setMoisture(0);
+                curEntry.setCrop(null);
+                curEntry.setGrowth(0);
+            }
+        }
+    }
+
+    getCurFrame() {
+        return this.frameView.getUint16(0);
+    }
+
+    setCurFrame(frame) {
+        this.frameView.setUint16(0, frame);
+    }
+
+    incrCurFrame() {
+        this.setCurFrame(this.getCurFrame() + 1);
+    }
+
+    getPlayerLoc() {
+        return {x: this.playerLocView.getUint8(0), y: this.playerLocView.getUint8(1)};
+    }
+
+    setPlayerLoc(x, y) {
+        this.playerLocView.setUint8(0, x);
+        this.playerLocView.setUint8(1, y);
     }
 
     toIndex(i, j) {
@@ -19,10 +48,57 @@ class Board {
     }
 
     getEntry(i, j) {
-        return this.board[this.toIndex(i, j)];
+        return new BoardEntry(new DataView(this.board, FRAME_BYTES + COORD_BYTES + this.toIndex(i, j) * ENTRY_BYTES, ENTRY_BYTES));
+    }
+}
+
+class BoardEntry {
+    constructor(DataView) {
+        this.DataView = DataView;
+        this.sunOffset = 0;
+        this.moistureOffset = SUN_BYTES;
+        this.cropOffset = SUN_BYTES + MOIST_BYTES;
+        this.growthOffset = SUN_BYTES + MOIST_BYTES + CROP_BYTES;
     }
 
-    setEntry(i, j, newEntry) {
-        this.board[this.toIndex(i, j)] = newEntry;
+    getSunlight() {
+        return this.DataView.getUint8(this.sunOffset);
+    }
+
+    setSunlight(sun) {
+        this.DataView.setUint8(this.sunOffset, sun);
+    }
+
+    getMoisture() {
+        return this.DataView.getUint8(this.moistureOffset);
+    }
+
+    setMoisture(moisture) {
+        this.DataView.setUint8(this.moistureOffset, moisture);
+    }
+
+    getCrop() {
+        let crop = this.DataView.getUint8(this.cropOffset);
+        if(crop > 0) {
+            return crop - 1;
+        } else {
+            return undefined;
+        }
+    }
+
+    setCrop(crop) {
+        if(crop != null && crop != undefined) {
+            this.DataView.setUint8(this.cropOffset, crop + 1);
+        } else {
+            this.DataView.setUint8(this.cropOffset, 0);
+        }
+    }
+
+    getGrowth() {
+        return this.DataView.getUint8(this.growthOffset);
+    }
+
+    setGrowth(growth) {
+        this.DataView.setUint8(this.growthOffset, growth);
     }
 }
