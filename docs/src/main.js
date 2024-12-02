@@ -5,6 +5,9 @@
 let config = {
     parent: 'phaser-game',
     type: Phaser.WEBGL,
+    render: {
+        pixelArt: true  // prevents pixel art from getting blurred when scaled
+    },
     width: 600,
     height: 600,
     backgroundColor: `#ffffff`,

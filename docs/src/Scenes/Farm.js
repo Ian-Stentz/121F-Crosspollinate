@@ -12,18 +12,22 @@ class Farm extends Phaser.Scene {
 
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
-        // this.brambleberry = new plantType(.7, 2.5, 1.5, plant1Imgs);
-        // this.wheat = new plantType(1, 2, 1, plant2Imgs);
-        // this.gilderberry = new plantType(.4, 4, 2.5, plant3Imgs); 
+        let brambleberry = new plantType(.7, 2.5, 1.5, my.crops.plantA);
+        let wheat = new plantType(1, 2, 1, my.crops.plantB);
+        let gilderberry = new plantType(.4, 4, 2.5, my.crops.plantC); 
 
         // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
         // seedPacket = Array.from(plantTypes.keys());
-      
-        // for(let plantType of plantTypes.keys()) {
-        //   inventory.setPlantCount(plantType, 0);
-        // }
 
-        //all of below should be moved to byte array
+        this.currentSeed = 0;
+        this.gameFrozen = false;
+        this.crops = {};
+        plantTypes = [brambleberry, wheat, gilderberry];
+        for(let i = 0; i < plantTypes.length; i++) {
+          inventory.setPlantCount(i, 0);
+        }
+
+        //TODO: all of below should be moved to byte array
         this.board = new Board(tileDim.width, tileDim.height);
         this.playerLoc = {
             x: 0,
@@ -52,6 +56,14 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on('keydown-A', () => {this.movePlayerDir(my.player, [-1, 0])}, this);
         this.input.keyboard.on('keydown-S', () => {this.movePlayerDir(my.player, [0, 1])}, this);
         this.input.keyboard.on('keydown-D', () => {this.movePlayerDir(my.player, [1, 0])}, this);
+        this.input.on('pointerdown', (e) => {
+            if(e.button == 0) {
+                this.plantCrop(e.x, e.y);
+            }
+        });
+        this.input.keyboard.on(`keydown-ONE`, () => {this.currentSeed = 0}, this);
+        this.input.keyboard.on(`keydown-TWO`, () => {this.currentSeed = 1}, this);
+        this.input.keyboard.on(`keydown-THREE`, () => {this.currentSeed = 2}, this);
 
         //debug input
         this.input.keyboard.on('keydown-P', () => {this.textUpdate(this.playerLoc.x, this.playerLoc.y, 5, 2)}, this);
@@ -63,9 +75,6 @@ class Farm extends Phaser.Scene {
         this.simSun();
         this.simMoisture();
         this.simGrowth();
-    }
-
-    update() {
     }
 
     //helper functions go here
@@ -120,14 +129,14 @@ class Farm extends Phaser.Scene {
 
     simMoisture(){
         for (let i = 0; i < this.board.width; i++) {
-          for (let j = 0; j < this.board.height; j++) {
-            this.board.getEntry(i, j).moisture += Math.random() * WATER_COEFFICIENT;
-            this.board.getEntry(i, j).moisture = roundToDec(this.board.getEntry(i, j).moisture, 1);
-            if(this.board.getEntry(i, j).moisture > MAX_WATER){
-                this.board.getEntry(i, j).moisture = MAX_WATER;
+            for (let j = 0; j < this.board.height; j++) {
+                this.board.getEntry(i, j).moisture += Math.random() * WATER_COEFFICIENT;
+                this.board.getEntry(i, j).moisture = roundToDec(this.board.getEntry(i, j).moisture, 1);
+                if(this.board.getEntry(i, j).moisture > MAX_WATER){
+                    this.board.getEntry(i, j).moisture = MAX_WATER;
+                }
+                this.moistureUpdate(i, j, this.board.getEntry(i, j).moisture);
             }
-            this.moistureUpdate(i, j, this.board.getEntry(i, j).moisture);
-          }
         }
       }
       
@@ -136,39 +145,38 @@ class Farm extends Phaser.Scene {
         const randTile = [Math.round(randRange(0,this.board.width-1)), Math.round(randRange(0, this.board.height-1))];
         //console.log(randTile);
         for (let i = 0; i < this.board.width; i++) {
-          for (let j = 0; j < this.board.height; j++) {
-            if(cellDist(randTile, [i,j]) == 0){
-                this.board.getEntry(i, j).sunlight = roundToDec(sunshine * 1, 1);
+            for (let j = 0; j < this.board.height; j++) {
+                if(cellDistManhattan(randTile, [i,j]) == 0){
+                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * 1, 1);
+                }
+                else if(cellDistManhattan(randTile, [i,j]) == 1){
+                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .8, 1);
+                }
+                else if(cellDistManhattan(randTile, [i,j]) == 2){
+                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .6, 1);
+                }
+                else{
+                    this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .4, 1);
+                }
+                this.sunUpdate(i, j, this.board.getEntry(i, j).sunlight);
             }
-            else if(cellDist(randTile, [i,j]) == 1){
-                this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .8, 1);
-            }
-            else if(cellDist(randTile, [i,j]) == 2){
-                this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .6, 1);
-            }
-            else{
-                this.board.getEntry(i, j).sunlight = roundToDec(sunshine * .4, 1);
-            }
-            this.sunUpdate(i, j, this.board.getEntry(i, j).sunlight);
-          }
         }
-      }
+    }
       
     simGrowth(){
         for (let i = 0; i < this.board.width; i++) {
           for (let j = 0; j < this.board.height; j++) {
             if(this.board.getEntry(i, j)["crop"] != null){
-              
-              if(plantTypes.get(this.board.getEntry(i, j)["crop"]).canGrow(this.board.getEntry(i, j).sunlight, this.board.getEntry(i, j).moisture, this.board.getEntry(i, j).growth) ){
+              if(plantTypes[(this.board.getEntry(i, j)["crop"])].canGrow(this.board.getEntry(i, j).sunlight, this.board.getEntry(i, j).moisture, this.board.getEntry(i, j).growth) ){
                 //console.log("growing")
-                this.board.getEntry(i, j).moisture -= plantTypes.get(this.board.getEntry(i, j)["crop"]).moistureConsumption;
+                this.board.getEntry(i, j).moisture -= plantTypes[(this.board.getEntry(i, j)["crop"])].moistureConsumption;
                 this.board.getEntry(i, j).growth++;
               }
       
               //console.log(getBoard(board, i, j).growth + ", max: " + plantTypes.get(getBoard(board, i, j)["crop"]).getLastStage());
               
-              if(this.board.getEntry(i, j).growth > plantTypes.get(this.board.getEntry(i, j)["crop"]).getLastStage()){
-                this.board.getEntry(i, j).growth = plantTypes.get(this.board.getEntry(i, j)["crop"]).getLastStage();
+              if(this.board.getEntry(i, j).growth > plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage()){
+                this.board.getEntry(i, j).growth = plantTypes[(this.board.getEntry(i, j)["crop"])].getLastStage();
               }
               //drawPlant()
             } 
@@ -182,5 +190,26 @@ class Farm extends Phaser.Scene {
 
     moistureUpdate(x, y, newMoisture) {
         this.eventEmitter.emit("moistureUpdate" + x + y, newMoisture);
+    }
+
+    plantCrop(mx, my){
+        let [u, v] = [Math.floor(mx / this.tileWidth), Math.floor(my / this.tileHeight)];
+      
+        if(cellDistOctal([this.playerLoc.x, this.playerLoc.y], [u, v]) <= 1){
+            if(this.board.getEntry(u, v)["crop"] == null){
+                this.board.getEntry(u, v)["crop"] = this.currentSeed;
+                let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[this.currentSeed].growthFrames, 0);
+                let plantScale = (this.tileWidth) / (newCrop.width * 2);
+                newCrop.setScale(plantScale, plantScale);
+                this.crops[[u,v].toString()] = newCrop;
+                this.tick();
+            } else {
+                this.harvestCrop(u, v);
+            }
+        }
+    }
+    
+    harvestCrop(u, v) {
+        console.log("crop harvested");
     }
 }

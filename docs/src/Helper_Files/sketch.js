@@ -124,13 +124,13 @@ function simSun(board){
   //console.log(randTile);
   for (let i = 0; i < gw; i++) {
     for (let j = 0; j < gh; j++) {
-      if(cellDist(randTile, [i,j]) == 0){
+      if(cellDistManhattan(randTile, [i,j]) == 0){
         getBoard(board, i, j).sunlight = roundToDec(sunshine * 1, 1);
       }
-      else if(cellDist(randTile, [i,j]) == 1){
+      else if(cellDistManhattan(randTile, [i,j]) == 1){
         getBoard(board, i, j).sunlight = roundToDec(sunshine * .8, 1);
       }
-      else if(cellDist(randTile, [i,j]) == 2){
+      else if(cellDistManhattan(randTile, [i,j]) == 2){
         getBoard(board, i, j).sunlight = roundToDec(sunshine * .6, 1);
       }
       else{
