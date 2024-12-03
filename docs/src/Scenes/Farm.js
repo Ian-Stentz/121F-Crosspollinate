@@ -51,31 +51,22 @@ class Farm extends Phaser.Scene {
             }
         } else {
             this.init(); // Initialize a new game if no saved state
+            this.tileWidth = game.config.width / this.board.width;
+            this.tileHeight = game.config.height / this.board.height;
+    
+            // Draw the board for the new game
+            this.drawBoard();
+            
+            // Ensure player is created only once for a new game
+            if (!my.player) {
+                console.log("Initializing new player...");
+                my.player = new Player(this, 0, 0, "player", null);
+                let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
+                my.player.setScale(playerScale, playerScale);
+                this.movePlayerPos(my.player, 0, 0); // Set initial position
+                console.log('Player initialized at default position');
+            }
         }
-    
-        // Creation of world objects goes here
-        this.tileWidth = game.config.width / this.board.width;
-        this.tileHeight = game.config.height / this.board.height;
-    
-        this.drawBoard();
-    
-        // Create the player object after initialization, and ensure the position is reset to (0, 0)
-        if (savedState) {
-            // Load saved state and restore the player position
-            const gameState = JSON.parse(savedState);
-            my.player = new Player(this, gameState.playerPos.x, gameState.playerPos.y, "player", null);
-        } else {
-            // If no saved game, create a new player at position (0, 0)
-            my.player = new Player(this, 0, 0, "player", null);
-        }
-    
-        // Scale and position the player sprite
-        let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
-        my.player.setScale(playerScale, playerScale);
-    
-        // After player creation, move to the saved or default position
-        const playerPos = savedState ? JSON.parse(savedState).playerPos : { x: 0, y: 0 };
-        this.movePlayerPos(my.player, playerPos.x, playerPos.y);
     
         // Inputs for movement and other actions
         this.input.keyboard.on('keydown-SPACE', () => { if (!this.gameFrozen) { this.tick() } }, this);
@@ -137,6 +128,10 @@ class Farm extends Phaser.Scene {
 
     //moves player directly to Tile
     movePlayerPos(player, u, v) {
+        if (!player) {
+            console.error("Player is not initialized!");
+            return; // Prevent the error if player is undefined
+        }
         this.board.setPlayerLoc(u, v);
         let [x, y] = [u * this.tileWidth + this.tileWidth * 3 / 4, v * this.tileHeight + this.tileHeight / 4];
         player.move(x, y);
@@ -231,50 +226,65 @@ class Farm extends Phaser.Scene {
     }
 
     saveGame() {
-        const gameState = {
-            playerPos: this.board.getPlayerLoc(),
-            inventory: inventory.getAll(),  // Save the entire inventory state
-            //crops: this.crops, // This would need to be serialized correctly
-            //boardState: this.board.getState(), // Assuming you have a method that serializes the board's state
-            //currentSeed: this.currentSeed,
-            //frame: this.frame,
-        };
-
-        // Print out the restored inventory to check it
-        console.log("Saved Inventory:", inventory.getAll());
+        // Convert the current state of the board to a byte array (ArrayBuffer)
+        const boardState = this.board.getBoard(); // Gets the ArrayBuffer containing the entire game state
     
-        localStorage.setItem('farmGameState', JSON.stringify(gameState)); // Save to localStorage
+        // Save the ArrayBuffer to localStorage (Note: localStorage only supports strings, so we need to convert to Base64)
+        const boardStateBase64 = Board.arrayBufferToBase64(boardState);
+    
+        // Save the Base64-encoded board state and the current frame to localStorage
+        const gameState = {
+            frame: this.board.getCurFrame(),
+            boardState: boardStateBase64, // Store the Base64 representation of the ArrayBuffer
+            playerPos: this.board.getPlayerLoc()
+
+        };
+    
+        localStorage.setItem('farmGameState', JSON.stringify(gameState));
         console.log("Game Saved!");
+        console.log("game state player location");
+        console.log(gameState.playerPos);
     }
+    
 
     loadGame() {
         const savedState = localStorage.getItem('farmGameState');
         if (savedState) {
             const gameState = JSON.parse(savedState);
     
-            // Restore board and game state
-            this.board.setPlayerLoc(gameState.playerPos.x, gameState.playerPos.y);  // Restore player position
-            // Restore inventory state
-            inventory.setAll(gameState.inventory);  // Set the inventory to the saved state
-            //this.crops = gameState.crops;  // Deserialize crops correctly
-            //this.board.setState(gameState.boardState);  // Set board state
-            //this.currentSeed = gameState.currentSeed;
-            //this.frame = gameState.frame;
+            // Convert the Base64-encoded board state back to an ArrayBuffer
+            const boardState = Board.base64ToArrayBuffer(gameState.boardState);
+    
+            // Set the restored board state
+            this.board.setBoard(boardState);
+    
+            // Restore the current frame
+            this.board.setCurFrame(gameState.frame);
 
-            // Print out the restored inventory to check it
-            console.log("Restored Inventory:", inventory.getAll());
+            this.tileWidth = game.config.width / this.board.width;
+            this.tileHeight = game.config.height / this.board.height;
     
-            // Restore the player object at the saved position
-            if (my.player) {
-                my.player.setPosition(gameState.playerPos.x, gameState.playerPos.y);
-            } else {
-                my.player = new Player(this, gameState.playerPos.x, gameState.playerPos.y, "player", null);
+            // Draw the board for the new game
+            this.drawBoard();
+
+            // Restore player position
+            let playerPos = gameState.playerPos;
+
+            // Ensure the player exists (if not created yet) before trying to move
+            if (!my.player) {
+                console.log("Initializing player from saved state...");
+                my.player = new Player(this, 0, 0, "player", null);
+                let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
+                my.player.setScale(playerScale, playerScale);
             }
-    
-            // Move the player to the restored position
-            this.movePlayerPos(my.player, gameState.playerPos.x, gameState.playerPos.y);
+
+            // Update player location in board and move player sprite to restored position
+            this.board.setPlayerLoc(playerPos);
+            this.movePlayerPos(my.player, playerPos.x, playerPos.y);
     
             console.log("Game Loaded!");
+        } else {
+            console.log("No saved game found.");
         }
     }
 }
