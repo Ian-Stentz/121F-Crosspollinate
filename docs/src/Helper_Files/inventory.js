@@ -24,6 +24,16 @@ const inventory = {
       }
     },
 
+    // Get the entire inventory (for saving)
+    getAll: function() {
+      return { ...this.plants };  // Return a shallow copy of the plants object to avoid external mutation
+    },
+
+    // Set the entire inventory (for loading)
+    setAll: function(savedInventory) {
+      this.plants = { ...savedInventory };  // Restore the plants object from the saved inventory state
+    },
+
     //implementation varies with the rules of the win condition
     //currently checks if the inv contains one of each plant
     checkWinConditions: function(plantTypeKeys) {

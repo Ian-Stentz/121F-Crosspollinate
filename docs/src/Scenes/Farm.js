@@ -233,12 +233,15 @@ class Farm extends Phaser.Scene {
     saveGame() {
         const gameState = {
             playerPos: this.board.getPlayerLoc(),
+            inventory: inventory.getAll(),  // Save the entire inventory state
             //crops: this.crops, // This would need to be serialized correctly
-            //inventory: inventory.getAll(), // Assuming inventory has a getAll method that returns the state
             //boardState: this.board.getState(), // Assuming you have a method that serializes the board's state
             //currentSeed: this.currentSeed,
             //frame: this.frame,
         };
+
+        // Print out the restored inventory to check it
+        console.log("Saved Inventory:", inventory.getAll());
     
         localStorage.setItem('farmGameState', JSON.stringify(gameState)); // Save to localStorage
         console.log("Game Saved!");
@@ -251,11 +254,15 @@ class Farm extends Phaser.Scene {
     
             // Restore board and game state
             this.board.setPlayerLoc(gameState.playerPos.x, gameState.playerPos.y);  // Restore player position
+            // Restore inventory state
+            inventory.setAll(gameState.inventory);  // Set the inventory to the saved state
             //this.crops = gameState.crops;  // Deserialize crops correctly
-            //inventory.setAll(gameState.inventory);  // Restore inventory state
             //this.board.setState(gameState.boardState);  // Set board state
             //this.currentSeed = gameState.currentSeed;
             //this.frame = gameState.frame;
+
+            // Print out the restored inventory to check it
+            console.log("Restored Inventory:", inventory.getAll());
     
             // Restore the player object at the saved position
             if (my.player) {
