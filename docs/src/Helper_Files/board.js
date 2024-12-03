@@ -10,6 +10,17 @@ class Board {
         this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
     }
 
+    constructor(gridWidth, gridHeight, loadedArrayBuffer) {
+        this.width = gridWidth;
+        this.height = gridHeight;
+        
+        //TODO: override if saved bytearray / overload the constructor
+        this.board = loadedArrayBuffer;
+
+        this.frameView = new DataView(this.board, 0, FRAME_BYTES);
+        this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
+    }
+
     init() {
         for(let i = 0; i < this.width; i++) {
             for(let j = 0; j < this.height; j++) {
