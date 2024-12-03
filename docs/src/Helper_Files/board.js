@@ -4,21 +4,11 @@ class Board {
         this.height = gridHeight;
         
         //TODO: override if saved bytearray / overload the constructor
-        this.board = new ArrayBuffer(FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES);
+        this.board = new ArrayBuffer(FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES + INVENTORY_ENTRY_BYTES * PLANT_TYPES);
 
         this.frameView = new DataView(this.board, 0, FRAME_BYTES);
         this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
-    }
-
-    constructor(gridWidth, gridHeight, loadedArrayBuffer) {
-        this.width = gridWidth;
-        this.height = gridHeight;
-        
-        //TODO: override if saved bytearray / overload the constructor
-        this.board = loadedArrayBuffer;
-
-        this.frameView = new DataView(this.board, 0, FRAME_BYTES);
-        this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
+        this.inventoryView = new DataView(this.board, FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES, INVENTORY_ENTRY_BYTES * PLANT_TYPES);
     }
 
     init() {
@@ -31,6 +21,12 @@ class Board {
                 curEntry.setGrowth(0);
             }
         }
+    }
+
+    setBoard(board) {
+        this.board = board
+        this.frameView = new DataView(this.board, 0, FRAME_BYTES);
+        this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
     }
 
     getCurFrame() {
@@ -60,6 +56,29 @@ class Board {
 
     getEntry(i, j) {
         return new BoardEntry(new DataView(this.board, FRAME_BYTES + COORD_BYTES + this.toIndex(i, j) * ENTRY_BYTES, ENTRY_BYTES));
+    }
+
+    getPlant(i) {
+        return this.inventoryView.getUint16(i * INVENTORY_ENTRY_BYTES);
+    }
+
+    setPlant(i, plantCount) {
+        this.inventoryView.setUint16(i * INVENTORY_ENTRY_BYTES, plantCount);
+    }
+
+    addPlant(i, deltaCount) {
+        this.setPlant(i, this.getPlant(i) + deltaCount);
+    }
+
+    checkWinConditions(plantKeys, targetCount) {
+        let winCondition = true;
+        for (let key of plantKeys) {
+            if (this.getPlant(key) < targetCount) {
+                winCondition = false;
+                break;
+            }
+        }
+        return winCondition
     }
 }
 
