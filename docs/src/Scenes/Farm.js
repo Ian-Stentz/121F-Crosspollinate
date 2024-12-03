@@ -208,7 +208,7 @@ class Farm extends Phaser.Scene {
         let entry = this.board.getEntry(u, v);
         if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
             this.crops[[u,v].toString()].remove();
-            inventory.addPlant(entry.getCrop(), 1);
+            this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
             entry.setGrowth(0);
             this.eventEmitter.emit("checkWin");
@@ -216,7 +216,7 @@ class Farm extends Phaser.Scene {
     }
 
     checkWinCon() {
-        if(inventory.checkWinConditions([0, 1, 2])) {
+        if(this.board.checkWinConditions([0, 1, 2])) {
             this.gameFrozen = true;
             let fontSettings = {
                 fontFamily: 'utf-8',
