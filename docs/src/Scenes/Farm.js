@@ -21,7 +21,7 @@ class Farm extends Phaser.Scene {
 
         this.currentSeed = 0;
         this.gameFrozen = false;
-        this.crops = {};
+        this.cropSprites = {};
         plantTypes = [brambleberry, wheat, gilderberry];
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0);
@@ -175,7 +175,7 @@ class Farm extends Phaser.Scene {
                     if(plantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth()) ){
                         curEntry.setMoisture(curEntry.getMoisture() - plantTypes[curEntry.getCrop()].moistureConsumption);
                         curEntry.setGrowth(curEntry.getGrowth() + 1);
-                        this.crops[[i,j].toString()].setStage(curEntry.getGrowth());
+                        this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
                     }
                 }
             }
@@ -197,7 +197,7 @@ class Farm extends Phaser.Scene {
                 let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[this.currentSeed].growthFrames, 0);
                 let plantScale = (this.tileWidth) / (newCrop.width * 2);
                 newCrop.setScale(plantScale, plantScale);
-                this.crops[[u,v].toString()] = newCrop;1
+                this.cropSprites[[u,v].toString()] = newCrop;1
             } else {
                 this.harvestCrop(u, v);
             }
@@ -207,7 +207,7 @@ class Farm extends Phaser.Scene {
     harvestCrop(u, v) {
         let entry = this.board.getEntry(u, v);
         if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
-            this.crops[[u,v].toString()].remove();
+            this.cropSprites[[u,v].toString()].remove();
             this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
             entry.setGrowth(0);
