@@ -19,6 +19,12 @@ class Farm extends Phaser.Scene {
         // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
         // seedPacket = Array.from(plantTypes.keys());
 
+        //TODO: all of below should be moved to byte array
+        this.board = new Board(tileDim.width, tileDim.height);
+        this.board.init();
+        this.board.setCurFrame(0);
+        this.board.setPlayerLoc(0, 0);
+
         this.currentSeed = 0;
         this.gameFrozen = false;
         this.cropSprites = {};
@@ -26,12 +32,6 @@ class Farm extends Phaser.Scene {
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0);
         }
-
-        //TODO: all of below should be moved to byte array
-        this.board = new Board(tileDim.width, tileDim.height);
-        this.board.init();
-        this.board.setCurFrame(0);
-        this.board.setPlayerLoc(0, 0);
     }
 
     create() {
@@ -216,7 +216,7 @@ class Farm extends Phaser.Scene {
     }
 
     checkWinCon() {
-        if(this.board.checkWinConditions([0, 1, 2])) {
+        if(this.board.checkWinConditions([0, 1, 2], 1)) {
             this.gameFrozen = true;
             let fontSettings = {
                 fontFamily: 'utf-8',
