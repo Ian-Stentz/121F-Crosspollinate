@@ -35,44 +35,76 @@ class Farm extends Phaser.Scene {
     }
 
     create() {
-        //creation of world objects goes here
-        this.tileWidth = game.config.width/this.board.width;
-        this.tileHeight = game.config.height/this.board.height;
-
+        // Check if there is an auto-save
+        const savedState = localStorage.getItem('farmGameState');
+    
+        if (savedState) {
+            // Prompt the player to continue or start a new game
+            const continueGame = confirm("Do you want to continue from where you left off?");
+            if (continueGame) {
+                console.log("reloading past game...");
+                this.loadGame();
+            } else {
+                localStorage.removeItem('farmGameState'); // Clear the saved game if they start a new game
+                console.log("initializing new game...");
+                this.scene.restart();  // Restart the scene to initialize a new game
+            }
+        } else {
+            this.init(); // Initialize a new game if no saved state
+        }
+    
+        // Creation of world objects goes here
+        this.tileWidth = game.config.width / this.board.width;
+        this.tileHeight = game.config.height / this.board.height;
+    
         this.drawBoard();
-
-        //my.player = this.add.image(0, 0, "player");
-        my.player = new Player(this, 0, 0, "player", null);
-        //636x1462
+    
+        // Create the player object after initialization, and ensure the position is reset to (0, 0)
+        if (savedState) {
+            // Load saved state and restore the player position
+            const gameState = JSON.parse(savedState);
+            my.player = new Player(this, gameState.playerPos.x, gameState.playerPos.y, "player", null);
+        } else {
+            // If no saved game, create a new player at position (0, 0)
+            my.player = new Player(this, 0, 0, "player", null);
+        }
+    
+        // Scale and position the player sprite
         let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
-        my.player.setScale(playerScale, playerScale); 
-        this.movePlayerPos(my.player, 0, 0);
-
-        //inputs
-        this.input.keyboard.on('keydown-SPACE', () => {if(!this.gameFrozen) {this.tick()}}, this);
-        this.input.keyboard.on('keydown-W', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [0, -1])}}, this);
-        this.input.keyboard.on('keydown-A', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [-1, 0])}}, this);
-        this.input.keyboard.on('keydown-S', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [0, 1])}}, this);
-        this.input.keyboard.on('keydown-D', () => {if(!this.gameFrozen) {this.movePlayerDir(my.player, [1, 0])}}, this);
+        my.player.setScale(playerScale, playerScale);
+    
+        // After player creation, move to the saved or default position
+        const playerPos = savedState ? JSON.parse(savedState).playerPos : { x: 0, y: 0 };
+        this.movePlayerPos(my.player, playerPos.x, playerPos.y);
+    
+        // Inputs for movement and other actions
+        this.input.keyboard.on('keydown-SPACE', () => { if (!this.gameFrozen) { this.tick() } }, this);
+        this.input.keyboard.on('keydown-W', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } }, this);
+        this.input.keyboard.on('keydown-A', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [-1, 0]) } }, this);
+        this.input.keyboard.on('keydown-S', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } }, this);
+        this.input.keyboard.on('keydown-D', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } }, this);
         this.input.on('pointerdown', (e) => {
-            if(e.button == 0) {
-                if(!this.gameFrozen) {this.plantCrop(e.x, e.y)};
+            if (e.button == 0) {
+                if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
             }
         });
-        this.input.keyboard.on(`keydown-ONE`, () => {this.currentSeed = 0}, this);
-        this.input.keyboard.on(`keydown-TWO`, () => {this.currentSeed = 1}, this);
-        this.input.keyboard.on(`keydown-THREE`, () => {this.currentSeed = 2}, this);
-
-        //debug input
-        this.input.keyboard.on('keydown-P', () => {let loc = this.board.getPlayerLoc(); this.textUpdate(loc.x, loc.y, 5, 2)}, this);
-
-        this.eventEmitter.on("checkWin", () => {this.checkWinCon()}, this);
+        this.input.keyboard.on(`keydown-ONE`, () => { this.currentSeed = 0 }, this);
+        this.input.keyboard.on(`keydown-TWO`, () => { this.currentSeed = 1 }, this);
+        this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2 }, this);
+    
+        // Debug input
+        this.input.keyboard.on('keydown-P', () => { let loc = this.board.getPlayerLoc(); this.textUpdate(loc.x, loc.y, 5, 2) }, this);
+    
+        this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
     }
 
     tick() {
         //no update, only our turn-based tick
         this.frame++;
         this.simCells();
+
+        // Auto-save at the end of each tick
+        this.saveGame();
     }
 
     //helper functions go here
@@ -195,6 +227,47 @@ class Farm extends Phaser.Scene {
                 strokeThickness: 4
             }
             this.add.text(game.config.width / 2, game.config.height / 2, "You Win!", fontSettings).setOrigin(0.5);
+        }
+    }
+
+    saveGame() {
+        const gameState = {
+            playerPos: this.board.getPlayerLoc(),
+            //crops: this.crops, // This would need to be serialized correctly
+            //inventory: inventory.getAll(), // Assuming inventory has a getAll method that returns the state
+            //boardState: this.board.getState(), // Assuming you have a method that serializes the board's state
+            //currentSeed: this.currentSeed,
+            //frame: this.frame,
+        };
+    
+        localStorage.setItem('farmGameState', JSON.stringify(gameState)); // Save to localStorage
+        console.log("Game Saved!");
+    }
+
+    loadGame() {
+        const savedState = localStorage.getItem('farmGameState');
+        if (savedState) {
+            const gameState = JSON.parse(savedState);
+    
+            // Restore board and game state
+            this.board.setPlayerLoc(gameState.playerPos.x, gameState.playerPos.y);  // Restore player position
+            //this.crops = gameState.crops;  // Deserialize crops correctly
+            //inventory.setAll(gameState.inventory);  // Restore inventory state
+            //this.board.setState(gameState.boardState);  // Set board state
+            //this.currentSeed = gameState.currentSeed;
+            //this.frame = gameState.frame;
+    
+            // Restore the player object at the saved position
+            if (my.player) {
+                my.player.setPosition(gameState.playerPos.x, gameState.playerPos.y);
+            } else {
+                my.player = new Player(this, gameState.playerPos.x, gameState.playerPos.y, "player", null);
+            }
+    
+            // Move the player to the restored position
+            this.movePlayerPos(my.player, gameState.playerPos.x, gameState.playerPos.y);
+    
+            console.log("Game Loaded!");
         }
     }
 }
