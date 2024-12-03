@@ -27,6 +27,7 @@ class Board {
         this.board = board
         this.frameView = new DataView(this.board, 0, FRAME_BYTES);
         this.playerLocView = new DataView(this.board, FRAME_BYTES, COORD_BYTES);
+        this.inventoryView = new DataView(this.board, FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES, INVENTORY_ENTRY_BYTES * PLANT_TYPES);
     }
 
     getCurFrame() {

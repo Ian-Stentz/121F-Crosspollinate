@@ -24,7 +24,7 @@ class Farm extends Phaser.Scene {
         this.crops = {};
         plantTypes = [brambleberry, wheat, gilderberry];
         for(let i = 0; i < plantTypes.length; i++) {
-          inventory.setPlantCount(i, 0);
+          this.board.setPlant(i, 0);
         }
 
         //TODO: all of below should be moved to byte array
