@@ -23,6 +23,10 @@ class Board {
         }
     }
 
+    getBoard() {
+        return this.board
+    }
+
     setBoard(board) {
         this.board = board
         this.frameView = new DataView(this.board, 0, FRAME_BYTES);
