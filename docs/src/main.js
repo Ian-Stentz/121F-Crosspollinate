@@ -10,7 +10,7 @@ let config = {
     },
     width: 600,
     height: 600,
-    backgroundColor: `#ffffff`,
+    backgroundColor: `#111111`,
     scene: [Load, Farm, Menu]
 }
 
