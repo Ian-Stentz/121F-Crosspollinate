@@ -9,8 +9,8 @@ let config = {
         pixelArt: true  // prevents pixel art from getting blurred when scaled
     },
     width: 600,
-    height: 600,
-    backgroundColor: `#111111`,
+    height: 650,
+    backgroundColor: `#104000`,
     scene: [Load, Farm, Menu]
 }
 
@@ -23,6 +23,7 @@ const MIN_SUN = 0;
 const MAX_SUN = 20;
 const WATER_COEFFICIENT = 12;
 const MAX_WATER = 50;
+const HEIGHT_UNUSED_FOR_TILES = 50;
 
 const FRAME_BYTES = 2;
 const COORD_BYTES = 2;

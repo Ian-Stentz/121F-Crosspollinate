@@ -51,7 +51,7 @@ class Farm extends Phaser.Scene {
         } else {
             this.init(); // Initialize a new game if no saved state
             this.tileWidth = game.config.width / this.board.width;
-            this.tileHeight = game.config.height / this.board.height;
+            this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
     
             // Draw the board for the new game
             this.drawBoard();
@@ -86,6 +86,10 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on('keydown-P', () => { let loc = this.board.getPlayerLoc(); this.textUpdate(loc.x, loc.y, 5, 2) }, this);
     
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
+
+
+        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + this.currentSeed, {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested: 0, 0, 0', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
     }
 
     tick() {
@@ -178,6 +182,26 @@ class Farm extends Phaser.Scene {
 
     textUpdate(x, y) {
         this.eventEmitter.emit("updateCell" + x + y);
+        this.heldseed.text = 'Held Seed: Plant ' + this.currentSeed;
+        
+        let harvestText = "Harvested: ";
+        for(let i = 0; i < plantTypes.length; i++){
+            harvestText = harvestText + inventory.getPlantCount(plantTypes[i]) + ", ";
+            
+        }
+        this.harvested.text = harvestText;
+        console.log("harvested is: " + inventory.getPlantCount(0));
+        
+    }
+
+    hudUpdate(seed, harvested){
+        this.heldseed.text = 'Held Seed: Plant ' + this.currentSeed;
+
+        let harvestText = "Harvested: ";
+        for(let i = 0; i < harvested.length; i++){
+            harvestText = harvestText + toString(harvest[i]);
+        }
+        this.harvested.text = "";
     }
 
     plantCrop(mx, my){
@@ -202,12 +226,16 @@ class Farm extends Phaser.Scene {
     
     harvestCrop(u, v) {
         let entry = this.board.getEntry(u, v);
+        //let curEntry = this.board.getEntry(i, j);
         if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
             this.cropSprites[[u,v].toString()].remove();
             this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
             entry.setGrowth(0);
             this.eventEmitter.emit("checkWin");
+            inventory.addPlant(plantTypes[(entry.getCrop())], 1)
+            console.log("adding plant type " +  plantTypes[entry.getCrop()]);
+            console.log("adding plant type " +  entry.getCrop());
         }
     }
 
@@ -261,7 +289,7 @@ class Farm extends Phaser.Scene {
             this.board.setCurFrame(gameState.frame);
 
             this.tileWidth = game.config.width / this.board.width;
-            this.tileHeight = game.config.height / this.board.height;
+            this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
     
             // Draw the board for the saved game
             this.drawBoard();
