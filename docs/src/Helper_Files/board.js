@@ -85,7 +85,7 @@ class Board {
         }
         return winCondition
     }
-    
+
     // Static helper function to convert ArrayBuffer to Base64
     static arrayBufferToBase64(buffer) {
         let binary = '';

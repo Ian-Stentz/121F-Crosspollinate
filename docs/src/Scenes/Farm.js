@@ -9,7 +9,6 @@ class Farm extends Phaser.Scene {
 
     init() {
         //any initialization of global variables go here
-
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
         let brambleberry = new plantType(7, 25, 15, my.crops.plantA);
@@ -30,7 +29,7 @@ class Farm extends Phaser.Scene {
         this.cropSprites = {};
         plantTypes = [brambleberry, wheat, gilderberry];
         for(let i = 0; i < plantTypes.length; i++) {
-          this.board.setPlant(i, 0);
+          this.board.setPlant(i, 0); //intializes plants in inventory
         }
     }
 
@@ -64,7 +63,7 @@ class Farm extends Phaser.Scene {
                 let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
                 my.player.setScale(playerScale, playerScale);
                 this.movePlayerPos(my.player, 0, 0); // Set initial position
-                console.log('Player initialized at default position');
+                console.log('Player placed at default position');
             }
         }
     
@@ -193,6 +192,8 @@ class Farm extends Phaser.Scene {
                 let plantScale = (this.tileWidth) / (newCrop.width * 2);
                 newCrop.setScale(plantScale, plantScale);
                 this.cropSprites[[u,v].toString()] = newCrop;1
+                // Save game
+                this.saveGame();
             } else {
                 this.harvestCrop(u, v);
             }
@@ -242,8 +243,6 @@ class Farm extends Phaser.Scene {
     
         localStorage.setItem('farmGameState', JSON.stringify(gameState));
         console.log("Game Saved!");
-        console.log("game state player location");
-        console.log(gameState.playerPos);
     }
     
 
@@ -264,7 +263,7 @@ class Farm extends Phaser.Scene {
             this.tileWidth = game.config.width / this.board.width;
             this.tileHeight = game.config.height / this.board.height;
     
-            // Draw the board for the new game
+            // Draw the board for the saved game
             this.drawBoard();
 
             // Restore player position
@@ -272,7 +271,6 @@ class Farm extends Phaser.Scene {
 
             // Ensure the player exists (if not created yet) before trying to move
             if (!my.player) {
-                console.log("Initializing player from saved state...");
                 my.player = new Player(this, 0, 0, "player", null);
                 let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
                 my.player.setScale(playerScale, playerScale);
@@ -281,10 +279,75 @@ class Farm extends Phaser.Scene {
             // Update player location in board and move player sprite to restored position
             this.board.setPlayerLoc(playerPos);
             this.movePlayerPos(my.player, playerPos.x, playerPos.y);
+            
+            // Restore plants after initializing the board
+            this.restorePlants();
+
+            //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
     
             console.log("Game Loaded!");
         } else {
             console.log("No saved game found.");
+        }
+    }
+
+    // Method to restore plants based on their type in each cell
+    restorePlants() {
+        for (let i = 0; i < this.board.width; i++) {
+            for (let j = 0; j < this.board.height; j++) {
+                let curEntry = this.board.getEntry(i, j);
+
+                // Check if there is a plant in the current cell
+                let plantType = curEntry.getCrop(); // Get the crop type in the cell
+                if (plantType != undefined) { // If a plant exists
+                    this.restorePlantState(i, j, plantType);
+                }
+            }
+        }
+    }
+
+    // Method to restore plant state (example logic based on plant type)
+    restorePlantState(i, j, plantType) {
+        // Example of plant restoration logic depending on plant type
+        let curEntry = this.board.getEntry(i, j);
+
+        // Create new crop
+        let restoredCrop = new Crop(this, i * this.tileWidth + this.tileWidth / 2, j * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[curEntry.getCrop()].growthFrames, plantTypes[curEntry.getCrop()].getGrowthStage);
+        restoredCrop.setScale(2.8,2.8);
+        
+        // Check plant type and restore specific values
+        // Could be refactored to not use switch and reduce duplicate code <-----------------
+        switch(plantType) {
+            case 0: // Plant type 0
+                curEntry.setSunlight(curEntry.getSunlight());    // Restore sunlight value
+                curEntry.setMoisture(curEntry.getMoisture());     // Restore moisture value
+                curEntry.setGrowth(curEntry.getGrowth());
+                //create sprite at saved growth stage
+                this.cropSprites[[i,j].toString()] = restoredCrop;1
+                this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
+                break;
+            case 1: // Plant type 1
+                //restore sun,water,and growth
+                curEntry.setSunlight(curEntry.getSunlight());
+                curEntry.setMoisture(curEntry.getSunlight());
+                curEntry.setGrowth(curEntry.getGrowth());
+                //create sprite at saved growth stage
+                this.cropSprites[[i,j].toString()] = restoredCrop;1
+                this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
+                break;
+            case 2: // Plant type 2
+                curEntry.setSunlight(curEntry.getSunlight());
+                curEntry.setMoisture(curEntry.getSunlight());
+                curEntry.setGrowth(curEntry.getGrowth());
+                //create sprite at saved growth stage
+                restoredCrop.setScale(0.25,0.25);
+                this.cropSprites[[i,j].toString()] = restoredCrop;1
+                this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
+                break;
+            // Add more plant types as necessary
+            default:
+                console.log(`Unknown plant type at (${i}, ${j})`);
+                break;
         }
     }
 }
