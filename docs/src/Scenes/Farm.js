@@ -65,6 +65,8 @@ class Farm extends Phaser.Scene {
                 this.movePlayerPos(my.player, 0, 0); // Set initial position
                 console.log('Player placed at default position');
             }
+            this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+            this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
         }
     
         // Inputs for movement and other actions
@@ -78,18 +80,14 @@ class Farm extends Phaser.Scene {
                 if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
             }
         });
-        this.input.keyboard.on(`keydown-ONE`, () => { this.currentSeed = 0 }, this);
-        this.input.keyboard.on(`keydown-TWO`, () => { this.currentSeed = 1 }, this);
-        this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2 }, this);
+        this.input.keyboard.on(`keydown-ONE`, () => {this.currentSeed = 0; this.hudUpdate();}, this);
+        this.input.keyboard.on(`keydown-TWO`, () => { this.currentSeed = 1; this.hudUpdate();}, this);
+        this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2; this.hudUpdate();}, this);
     
         // Debug input
         this.input.keyboard.on('keydown-P', () => { let loc = this.board.getPlayerLoc(); this.textUpdate(loc.x, loc.y, 5, 2) }, this);
     
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
-
-
-        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + this.currentSeed, {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
-        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested: 0, 0, 0', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
     }
 
     tick() {
@@ -182,26 +180,12 @@ class Farm extends Phaser.Scene {
 
     textUpdate(x, y) {
         this.eventEmitter.emit("updateCell" + x + y);
-        this.heldseed.text = 'Held Seed: Plant ' + this.currentSeed;
-        
-        let harvestText = "Harvested: ";
-        for(let i = 0; i < plantTypes.length; i++){
-            harvestText = harvestText + inventory.getPlantCount(plantTypes[i]) + ", ";
-            
-        }
-        this.harvested.text = harvestText;
-        console.log("harvested is: " + inventory.getPlantCount(0));
-        
     }
 
-    hudUpdate(seed, harvested){
-        this.heldseed.text = 'Held Seed: Plant ' + this.currentSeed;
-
-        let harvestText = "Harvested: ";
-        for(let i = 0; i < harvested.length; i++){
-            harvestText = harvestText + toString(harvest[i]);
-        }
-        this.harvested.text = "";
+    hudUpdate(){
+        this.heldseed.text = 'Held Seed: Plant ' + (this.currentSeed + 1);
+        let harvestText = "Harvested Total: " + this.board.getPlant("0") + ", " + this.board.getPlant("1") + ", " + this.board.getPlant("2");  // can also call e.g. this.board.getPlant("wheat")
+        this.harvested.text = harvestText;
     }
 
     plantCrop(mx, my){
@@ -233,10 +217,9 @@ class Farm extends Phaser.Scene {
             entry.setCrop(undefined);
             entry.setGrowth(0);
             this.eventEmitter.emit("checkWin");
-            inventory.addPlant(plantTypes[(entry.getCrop())], 1)
-            console.log("adding plant type " +  plantTypes[entry.getCrop()]);
-            console.log("adding plant type " +  entry.getCrop());
+            this.hudUpdate();
         }
+        this.saveGame();
     }
 
     checkWinCon() {
@@ -310,6 +293,12 @@ class Farm extends Phaser.Scene {
             
             // Restore plants after initializing the board
             this.restorePlants();
+
+            // restore inventory display
+            this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+            this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+
+            this.hudUpdate();
 
             //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
     
