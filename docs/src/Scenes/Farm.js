@@ -8,6 +8,7 @@ class Farm extends Phaser.Scene {
     }
 
     init() {
+        console.log("initialized");
         //any initialization of global variables go here
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
@@ -52,7 +53,6 @@ class Farm extends Phaser.Scene {
                 this.scene.restart();  // Restart the scene to initialize a new game
             }
         } else {
-            this.init(); // Initialize a new game if no saved state
             this.tileWidth = game.config.width / this.board.width;
             this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
     
