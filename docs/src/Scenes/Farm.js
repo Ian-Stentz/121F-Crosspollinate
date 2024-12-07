@@ -25,6 +25,7 @@ class Farm extends Phaser.Scene {
         this.board.setPlayerLoc(0, 0);
 
         this.history = [];
+        this.fHistory = [];
         this.redo = [];
 
         this.currentSeed = 0;
@@ -89,9 +90,6 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on(`keydown-TWO`, () => { this.currentSeed = 1; this.hudUpdate();}, this);
         this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2; this.hudUpdate();}, this);
     
-        // Debug input
-        this.input.keyboard.on('keydown-P', () => { let loc = this.board.getPlayerLoc(); this.textUpdate(loc.x, loc.y, 5, 2) }, this);
-    
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
     }
 
@@ -144,6 +142,7 @@ class Farm extends Phaser.Scene {
         this.board.setPlayerLoc(u, v);
         let [x, y] = [u * this.tileWidth + this.tileWidth * 3 / 4, v * this.tileHeight + this.tileHeight / 4];
         player.move(x, y);
+        console.log("player position: " + u + " " + v);
     }
 
     //moves player with suggestion of dir, handles collision and time progression
@@ -204,16 +203,21 @@ class Farm extends Phaser.Scene {
             if(entry.getCrop() == undefined){
                 this.tick();
                 entry.setCrop(this.currentSeed);
-                let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[this.currentSeed].growthFrames, 0);
-                let plantScale = (this.tileWidth) / (newCrop.width * 2);
-                newCrop.setScale(plantScale, plantScale);
-                this.cropSprites[[u,v].toString()] = newCrop;1
+                entry.setGrowth(0);
+                this.addCropSprite(u, v, this.currentSeed, 0);
                 // Save game
                 this.saveGame();
             } else {
                 this.harvestCrop(u, v);
             }
         }
+    }
+
+    addCropSprite(u, v, type, growth) {
+        let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[type].growthFrames, growth);
+        let plantScale = (this.tileWidth) / (newCrop.width * 2);
+        newCrop.setScale(plantScale, plantScale);
+        this.cropSprites[[u,v].toString()] = newCrop;
     }
     
     harvestCrop(u, v) {
@@ -288,6 +292,7 @@ class Farm extends Phaser.Scene {
     loadState(boardState){
         // Set the restored board state
         this.board.setBoard(boardState);
+        console.log("loading frame " + this.board.getCurFrame());
 
         // Restore player position
         let playerPos = this.board.getPlayerLoc();
@@ -300,9 +305,9 @@ class Farm extends Phaser.Scene {
             my.player.setScale(playerScale, playerScale);
         }
 
-        console.log(my.player);
+        //console.log(my.player);
 
-        console.log(playerPos);
+        
         // Move player sprite to restored position
         this.movePlayerPos(my.player, playerPos.x, playerPos.y);
         
@@ -310,7 +315,11 @@ class Farm extends Phaser.Scene {
         this.restorePlants();
 
         
-
+        for(let i = 0; i < this.board.width; i++) {
+            for(let j = 0; j < this.board.height; j++) {
+                this.textUpdate(i, j);
+            }
+        }
         this.hudUpdate();
 
         //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
@@ -320,77 +329,53 @@ class Farm extends Phaser.Scene {
     restorePlants() {
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
-                let curEntry = this.board.getEntry(i, j);
-
-                // Check if there is a plant in the current cell
-                let plantType = curEntry.getCrop(); // Get the crop type in the cell
-                if (plantType != undefined) { // If a plant exists
-                    this.restorePlantState(i, j, plantType);
-                }
+                this.refreshCropSprite(i, j);
             }
         }
     }
 
-    // Method to restore plant state (example logic based on plant type)
-    restorePlantState(i, j, plantType) {
-        // Example of plant restoration logic depending on plant type
-        let curEntry = this.board.getEntry(i, j);
-
-        // Create new crop
-        let restoredCrop = new Crop(this, i * this.tileWidth + this.tileWidth / 2, j * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[curEntry.getCrop()].growthFrames, plantTypes[curEntry.getCrop()].getGrowthStage);
-        restoredCrop.setScale(2.8,2.8);
-        
-        // Check plant type and restore specific values
-        // Could be refactored to not use switch and reduce duplicate code <-----------------
-        switch(plantType) {
-            case 0: // Plant type 0
-                curEntry.setSunlight(curEntry.getSunlight());    // Restore sunlight value
-                curEntry.setMoisture(curEntry.getMoisture());     // Restore moisture value
-                curEntry.setGrowth(curEntry.getGrowth());
-                //create sprite at saved growth stage
-                this.cropSprites[[i,j].toString()] = restoredCrop;1
-                this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
-                break;
-            case 1: // Plant type 1
-                //restore sun,water,and growth
-                curEntry.setSunlight(curEntry.getSunlight());
-                curEntry.setMoisture(curEntry.getSunlight());
-                curEntry.setGrowth(curEntry.getGrowth());
-                //create sprite at saved growth stage
-                this.cropSprites[[i,j].toString()] = restoredCrop;1
-                this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
-                break;
-            case 2: // Plant type 2
-                curEntry.setSunlight(curEntry.getSunlight());
-                curEntry.setMoisture(curEntry.getSunlight());
-                curEntry.setGrowth(curEntry.getGrowth());
-                //create sprite at saved growth stage
-                restoredCrop.setScale(0.25,0.25);
-                this.cropSprites[[i,j].toString()] = restoredCrop;1
-                this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
-                break;
-            // Add more plant types as necessary
-            default:
-                console.log(`Unknown plant type at (${i}, ${j})`);
-                break;
+    // Method to update the crop sprite
+    refreshCropSprite(u, v) {
+        let curEntry = this.board.getEntry(u, v);
+        let curSprite = this.cropSprites[[u,v].toString()];
+        let entryCrop = curEntry.getCrop()
+        //case 1: yes entry, no sprite: make new sprite
+        if(entryCrop != undefined && curSprite == null) {
+            this.addCropSprite(u, v, entryCrop, curEntry.getGrowth());
+        }
+        //case 2: no entry, yes sprite: delete sprite
+        else if(entryCrop == undefined && curSprite != null) {
+            curSprite.remove();
+        }
+        //case 3: yes entry, yes sprite: update sprite info
+        else if(entryCrop != undefined && curSprite != null) {
+            curSprite.overrideType(plantTypes[curEntry.getCrop()].growthFrames, curEntry.getGrowth())
         }
     }
 
     record(){ //adds current game state to history array
-        const boardState = this.board.getBoard().slice(0); // Gets a copy of the ArrayBuffer containing the entire game state
+
+        // Gets a copy of the ArrayBuffer containing the entire game state
+        //const boardState = new ArrayBuffer(this.board.getBoard().slice(0));
+        const boardState = this.board.getBoard().slice(0); 
         this.history.push(boardState);
+        this.fHistory.push(this.board.getCurFrame());
         console.log(this.history.length);
+        console.log(this.fHistory);
     }
 
     undo(){
         if(this.history.length > 1){
             const state = this.history.pop();
+            this.fHistory.pop();
 
             if(state != null){
                 this.redo.push(state);
             }
-
+            
             console.log(this.history.length);
+            console.log(this.fHistory);
+            
             this.loadState(this.history[this.history.length - 1]);
             console.log("Undid last action.");
         }
