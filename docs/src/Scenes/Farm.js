@@ -24,6 +24,9 @@ class Farm extends Phaser.Scene {
         this.board.setCurFrame(0);
         this.board.setPlayerLoc(0, 0);
 
+        this.history = [];
+        this.redo = [];
+
         this.currentSeed = 0;
         this.gameFrozen = false;
         this.cropSprites = {};
@@ -42,7 +45,7 @@ class Farm extends Phaser.Scene {
             const continueGame = confirm("Do you want to continue from where you left off?");
             if (continueGame) {
                 console.log("reloading past game...");
-                this.loadGame();
+                this.loadGame('farmGameState');
             } else {
                 localStorage.removeItem('farmGameState'); // Clear the saved game if they start a new game
                 console.log("initializing new game...");
@@ -68,6 +71,7 @@ class Farm extends Phaser.Scene {
             this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
             this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
         }
+        this.record();
     
         // Inputs for movement and other actions
         this.input.keyboard.on('keydown-SPACE', () => { if (!this.gameFrozen) { this.tick() } }, this);
@@ -75,6 +79,7 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on('keydown-A', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [-1, 0]) } }, this);
         this.input.keyboard.on('keydown-S', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } }, this);
         this.input.keyboard.on('keydown-D', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } }, this);
+        this.input.keyboard.on('keydown-U', () => { if (!this.gameFrozen) { this.undo() } }, this);
         this.input.on('pointerdown', (e) => {
             if (e.button == 0) {
                 if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
@@ -92,8 +97,11 @@ class Farm extends Phaser.Scene {
 
     tick() {
         //no update, only our turn-based tick
-        this.frame++;
+        this.board.incrCurFrame();
         this.simCells();
+
+        //Adds current state to the history stack
+        this.record();
 
         // Auto-save at the end of each tick
         this.saveGame();
@@ -219,7 +227,7 @@ class Farm extends Phaser.Scene {
             this.eventEmitter.emit("checkWin");
             this.hudUpdate();
         }
-        this.saveGame();
+        this.tick();
     }
 
     checkWinCon() {
@@ -243,69 +251,69 @@ class Farm extends Phaser.Scene {
     
         // Save the ArrayBuffer to localStorage (Note: localStorage only supports strings, so we need to convert to Base64)
         const boardStateBase64 = Board.arrayBufferToBase64(boardState);
-    
-        // Save the Base64-encoded board state and the current frame to localStorage
-        const gameState = {
-            frame: this.board.getCurFrame(),
-            boardState: boardStateBase64, // Store the Base64 representation of the ArrayBuffer
-            playerPos: this.board.getPlayerLoc()
 
-        };
-    
-        localStorage.setItem('farmGameState', JSON.stringify(gameState));
+        // Save the Base64-encoded board state
+        localStorage.setItem('farmGameState', boardStateBase64);
         console.log("Game Saved!");
     }
     
 
-    loadGame() {
-        const savedState = localStorage.getItem('farmGameState');
+    loadGame(saveFile) {
+        const savedState = localStorage.getItem(saveFile);
         if (savedState) {
-            const gameState = JSON.parse(savedState);
-    
-            // Convert the Base64-encoded board state back to an ArrayBuffer
-            const boardState = Board.base64ToArrayBuffer(gameState.boardState);
-    
-            // Set the restored board state
-            this.board.setBoard(boardState);
-    
-            // Restore the current frame
-            this.board.setCurFrame(gameState.frame);
-
             this.tileWidth = game.config.width / this.board.width;
             this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
-    
+
             // Draw the board for the saved game
             this.drawBoard();
-
-            // Restore player position
-            let playerPos = gameState.playerPos;
-
-            // Ensure the player exists (if not created yet) before trying to move
-            if (!my.player) {
-                my.player = new Player(this, 0, 0, "player", null);
-                let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
-                my.player.setScale(playerScale, playerScale);
-            }
-
-            // Update player location in board and move player sprite to restored position
-            this.board.setPlayerLoc(playerPos);
-            this.movePlayerPos(my.player, playerPos.x, playerPos.y);
-            
-            // Restore plants after initializing the board
-            this.restorePlants();
+    
+            // Convert the Base64-encoded board state back to an ArrayBuffer
+            const boardState = Board.base64ToArrayBuffer(savedState);
 
             // restore inventory display
             this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
             this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
 
-            this.hudUpdate();
-
-            //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
-    
+            
+            
+            this.loadState(boardState);
+            
+            
             console.log("Game Loaded!");
         } else {
             console.log("No saved game found.");
         }
+    }
+
+    loadState(boardState){
+        // Set the restored board state
+        this.board.setBoard(boardState);
+
+        // Restore player position
+        let playerPos = this.board.getPlayerLoc();
+
+        // Ensure the player exists (if not created yet) before trying to move
+        if (my.player == null) {
+            console.log("creating player");
+            my.player = new Player(this, 0, 0, "player", null);
+            let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
+            my.player.setScale(playerScale, playerScale);
+        }
+
+        console.log(my.player);
+
+        console.log(playerPos);
+        // Move player sprite to restored position
+        this.movePlayerPos(my.player, playerPos.x, playerPos.y);
+        
+        // Restore plants after initializing the board
+        this.restorePlants();
+
+        
+
+        this.hudUpdate();
+
+        //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
     }
 
     // Method to restore plants based on their type in each cell
@@ -365,6 +373,29 @@ class Farm extends Phaser.Scene {
             default:
                 console.log(`Unknown plant type at (${i}, ${j})`);
                 break;
+        }
+    }
+
+    record(){ //adds current game state to history array
+        const boardState = this.board.getBoard().slice(0); // Gets a copy of the ArrayBuffer containing the entire game state
+        this.history.push(boardState);
+        console.log(this.history.length);
+    }
+
+    undo(){
+        if(this.history.length > 1){
+            const state = this.history.pop();
+
+            if(state != null){
+                this.redo.push(state);
+            }
+
+            console.log(this.history.length);
+            this.loadState(this.history[this.history.length - 1]);
+            console.log("Undid last action.");
+        }
+        else{
+            console.log("Could not undo any further.");
         }
     }
 }
