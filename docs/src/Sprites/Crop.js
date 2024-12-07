@@ -10,6 +10,11 @@ class Crop extends Phaser.GameObjects.Sprite {
         return this;
     }
 
+    overrideType(textureList, stage) {
+        this.stages = textureList;
+        this.setStage(stage);
+    }
+
     setStage(stage) {
         this.setTexture(this.stages[stage]);
     }
