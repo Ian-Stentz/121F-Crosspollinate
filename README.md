@@ -20,10 +20,19 @@ Asset Credit: [Sprout Lands - Asset Pack by Cup Nooble](https://cupnooble.itch.i
 ## Outlook
 While other teams may focus on a simple farming simulator, we intend to focus on the act of creating new crops by cross-pollination. We anticipate that the most challenging part of the project will be to implement consistent formatting between code and clear documentation. We hope to learn how to implement the various design patterns and learn what development in Javascript looks like from beginning-to-end.
 
-# Devlog Entry #2 - 11/29/2024
+# Devlog Entry #2 - 11/29/2024 - F0
 
 ## How we satisfied the software requirements
 For our assignment, we represent the game as a 6x6 grid of tiles in top-down view. There is a character represented currently by a basic sprite that can navigate the grid by using “WASD” or the arrow keys, which will cause them to move one tile in the corresponding direction. Players advance time manually one frame at a time by either moving to another tile or pressing “Space.” The player can use “1/2/3” to select the corresponding seed packet (no visual feedback for this yet), and then can use left click on either the cell the player is occupying or one of the adjacent cells in order to plant the crop. As time progresses (as previously described), the plants will grow. They both require a certain amount of moisture and a certain amount of sunlight, varying by plant, and will individually grow given those conditions are fulfilled. The player can left click a fully grown crop in order to harvest it. Once the player has harvested at least one of each plant type, the game ends and displays “You won” to the screen.
 
 ## Reflection
 Our initial plan was to use the Phaser library however as we began working through the initial requirements we opted for the p5.js library because its built-in functions gave us a simple and flexible way to build a 2D grid-based game without the need for complex tilemap rendering. While our project has the required gameplay of player movement, planting crops, harvesting, and simulating environmental changes, it doesn't need the features of a full-fledged game engine like Phaser. Instead, we chose to meet the requirements with p5.js for its flexibility in drawing graphics and handling basic interactivity. We may utilize Phaser’s features in the future for UI feedback and scene management. We also added Live Server to our list of developmental tools so we could launch our web page (index.html) in the browser and automatically see the changes we made before committing to the main branch.
+
+# Devlog Entry #3 - 12/7/2024 - F1
+
+## How we satisfied the software requirements
+Since F0, we have converted the project from using a sketch.js based approach - drawing everything manually each frame through a call to the draw function - to a more phaser-based approach. We are now using Phaser's scene system to define a load scene which initializes our assets, a main menu scene, and a game scene which can be cycled between. Now instead of calling draw() each frame for each scene, we add sprite and text objects to the scene and let it handle drawing those individually each frame. 
+* F0.a: Now the player is represented by an object inheriting from sprite that moves by calling a move method which changes the sprite's x and y values. Saving and loading the player's state does not create a new sprite, instead simply moving the sprite. This means the sprite gets created once and only once per session, at the beginning of the session
+* F0.b: Same as last week
+* F0.c: Crops are also their own sprite objects. Similar to the player, they are pooled by being created once and only once
+* F0.d:

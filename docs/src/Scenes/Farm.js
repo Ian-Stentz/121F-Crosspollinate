@@ -19,36 +19,45 @@ class Farm extends Phaser.Scene {
         // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
         // seedPacket = Array.from(plantTypes.keys());
 
-        //TODO: all of below should be moved to byte array
         this.board = new Board(tileDim.width, tileDim.height);
         this.board.init();
         this.board.setCurFrame(0);
         this.board.setPlayerLoc(0, 0);
+
+        this.SAVESIZE = this.board.getSaveSize();
+        //console.log(this.SAVESIZE);
 
         this.history = [];
         this.redoStack = [];
 
         this.currentSeed = 0;
         this.gameFrozen = false;
-        this.cropSprites = {};
+
         plantTypes = [brambleberry, wheat, gilderberry];
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0); //intializes plants in inventory
+        }
+        
+        this.cropSprites = {};
+        for(let i = 0; i < this.board.width; i++) {
+            for(let j = 0; j < this.board.height; j++) {
+                this.addCropSprite(i, j);
+            }
         }
     }
 
     create() {
         // Check if there is an auto-save
-        const savedState = localStorage.getItem('farmGameState');
+        const savedState = localStorage.getItem('autoSaveHistory');
     
         if (savedState) {
             // Prompt the player to continue or start a new game
             const continueGame = confirm("Do you want to continue from where you left off?");
             if (continueGame) {
                 console.log("reloading past game...");
-                this.loadGame('farmGameState');
+                this.loadGame('autoSave');
             } else {
-                localStorage.removeItem('farmGameState'); // Clear the saved game if they start a new game
+                localStorage.removeItem('autoSaveHistory'); // Clear the saved game if they start a new game
                 console.log("initializing new game...");
                 this.scene.restart();  // Restart the scene to initialize a new game
             }
@@ -70,9 +79,10 @@ class Farm extends Phaser.Scene {
             }
             this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
             this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
-        }
-        this.record();
+            this.record();
     
+        }
+        
         // Inputs for movement and other actions
         this.input.keyboard.on('keydown-SPACE', () => { if (!this.gameFrozen) { this.tick() } }, this);
         this.input.keyboard.on('keydown-W', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } }, this);
@@ -105,7 +115,7 @@ class Farm extends Phaser.Scene {
         this.record();
 
         // Auto-save at the end of each tick
-        this.saveGame();
+        this.saveGame("autoSave");
     }
 
     //helper functions go here
@@ -204,31 +214,35 @@ class Farm extends Phaser.Scene {
         let entry = this.board.getEntry(u, v);
         if(cellDistOctal([curLoc.x, curLoc.y], [u, v]) <= 1){
             if(entry.getCrop() == undefined){
-                this.tick();
                 entry.setCrop(this.currentSeed);
                 entry.setGrowth(0);
-                this.addCropSprite(u, v, this.currentSeed, 0);
-                // Save game
-                this.saveGame();
+                this.plantCropSprite(u, v, this.currentSeed, 0);
+                this.tick();
             } else {
                 this.harvestCrop(u, v);
             }
         }
     }
 
-    addCropSprite(u, v, type, growth) {
-        let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[type].growthFrames, growth);
+    addCropSprite(u, v) {
+        let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[0].growthFrames, 0);
         let plantScale = (this.tileWidth) / (newCrop.width * 2);
         newCrop.setScale(plantScale, plantScale);
+        //newCrop.setVisible(false);
         this.cropSprites[[u,v].toString()] = newCrop;
+    }
+
+    plantCropSprite(u, v, type, growth) {
+        let cropSprite = this.cropSprites[[u,v].toString()]
+        cropSprite.overrideType(plantTypes[type].growthFrames, growth);
+        cropSprite.setVisible(true);
     }
     
     harvestCrop(u, v) {
         let entry = this.board.getEntry(u, v);
         //let curEntry = this.board.getEntry(i, j);
         if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
-            this.cropSprites[[u,v].toString()].remove();
-            this.cropSprites[[u,v].toString()] = null;
+            this.cropSprites[[u,v].toString()].setVisible(false);
             this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
             entry.setGrowth(0);
@@ -253,39 +267,76 @@ class Farm extends Phaser.Scene {
         }
     }
 
-    saveGame() {
+    saveGame(saveSlot) {
         // Convert the current state of the board to a byte array (ArrayBuffer)
         const boardState = this.board.getBoard(); // Gets the ArrayBuffer containing the entire game state
     
-        // Save the ArrayBuffer to localStorage (Note: localStorage only supports strings, so we need to convert to Base64)
+        // Save the ArrayBuffer to localStorage (Note: localStorage only supports strings, so we need to convert to Base64
         const boardStateBase64 = Board.arrayBufferToBase64(boardState);
 
-        // Save the Base64-encoded board state
-        localStorage.setItem('farmGameState', boardStateBase64);
+        let saveString = "";
+        for(let f = 0; f < this.history.length; f++){
+            saveString += this.history[f];
+        }
+
+        let redoString = "";
+        for(let f = 0; f < this.redoStack.length; f++){
+            redoString += this.redoStack[f];
+        }
+
+        // Save the Base64-encoded history and redo strings
+
+        localStorage.setItem(saveSlot+'History', saveString);
+        localStorage.setItem(saveSlot+'Redo', redoString);
         console.log("Game Saved!");
     }
     
 
-    loadGame(saveFile) {
-        const savedState = localStorage.getItem(saveFile);
+    loadGame(saveSlot) {
+        const savedState = localStorage.getItem(saveSlot+'History');
+        const redoState = localStorage.getItem(saveSlot+'Redo');
+        
         if (savedState) {
             this.tileWidth = game.config.width / this.board.width;
             this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
 
+            console.log("Found save, string length:" + savedState.length);
+            
             // Draw the board for the saved game
             this.drawBoard();
+
+            //Gets the amount of save states in the string
+            let frames = savedState.length/this.SAVESIZE;
+            console.log("Save contains " + frames + " frames of size " + this.SAVESIZE);
+
+            //slices the main string into state-sized pieces and loads them into the history stack
+            for(let f = 0; f < frames; f++){
+                const start = f * this.SAVESIZE;
+                this.history.push(savedState.slice(start, start + this.SAVESIZE));
+            }
     
-            // Convert the Base64-encoded board state back to an ArrayBuffer
-            const boardState = Board.base64ToArrayBuffer(savedState);
 
             // restore inventory display
             this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
             this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
 
-            
+            // Convert the most recent Base64-encoded board state back to an ArrayBuffer
+            console.log(`Loading frame ${this.history.length -1}...`);
+            const boardState = Board.base64ToArrayBuffer(this.history[this.history.length -1]);
             
             this.loadState(boardState);
             
+            //Load redo states into the stack
+            if(redoState){
+                frames = redoState.length/this.SAVESIZE;
+                console.log("Redo stack contains " + frames + " frames of size " + this.SAVESIZE);
+
+                //slices the main string into state-sized pieces and loads them into the history stack
+                for(let f = 0; f < frames; f++){
+                    const start = f * this.SAVESIZE;
+                    this.redoStack.push(redoState.slice(start, start + this.SAVESIZE));
+                }
+            }
             
             console.log("Game Loaded!");
         } else {
@@ -342,11 +393,11 @@ class Farm extends Phaser.Scene {
         let entryCrop = curEntry.getCrop()
         //case 1: yes entry, no sprite: make new sprite
         if(entryCrop != undefined && curSprite == null) {
-            this.addCropSprite(u, v, entryCrop, curEntry.getGrowth());
+            this.plantCropSprite(u, v, curEntry.getCrop, curEntry.getGrowth);
         }
         //case 2: no entry, yes sprite: delete sprite
         else if(entryCrop == undefined && curSprite != null) {
-            curSprite.remove();
+            curSprite.visible = false;
         }
         //case 3: yes entry, yes sprite: update sprite info
         else if(entryCrop != undefined && curSprite != null) {
@@ -375,6 +426,7 @@ class Farm extends Phaser.Scene {
             this.truehistory();
             
             this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
+            this.saveGame('autoSave');
             console.log("Undid last action.");
         }
         else{
@@ -394,6 +446,7 @@ class Farm extends Phaser.Scene {
             this.truehistory();
             
             this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
+            this.saveGame('autoSave');
             console.log("Redid last undo.");
         }
         else{
