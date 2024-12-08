@@ -37,6 +37,7 @@ class Farm extends Phaser.Scene {
         this.gameFrozen = false;
 
         plantTypes = [brambleberry, wheat, gilderberry];
+        this.seedsInPlay = [0, 1, 2];
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0); //intializes plants in inventory
         }
@@ -52,6 +53,11 @@ class Farm extends Phaser.Scene {
         this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"#EFE"}).setOrigin(0);
         
         this.initCropSprites();
+
+        let scenarios = this.cache.json.get("ExternalConditions");
+        console.log(scenarios);
+
+        this.loadScenario("hybridization");
     
         // Check if there is an auto-save
         const savedState = localStorage.getItem(AUTO_SAVE_SLOT_NAME + UNDO_APPEND);
@@ -526,5 +532,53 @@ class Farm extends Phaser.Scene {
         }
         console.log("Printing true history");
         console.log(hist);
+    }
+
+    loadScenario(scenario) {
+        const scenarioObj = this.cache.json.get("ExternalConditions")[scenario];
+        console.log(scenarioObj);
+        //set start moisture
+        if(scenarioObj.startMoisture != undefined) {
+            this.startMoisture = scenarioObj.startMoisture
+        } else {
+            this.startMoisture = 0;
+        }
+        //set available plants
+        if(scenarioObj.seeds_in_play != undefined) {
+            this.seedsInPlay = []
+            for (let seed of scenarioObj.seeds_in_play) {
+                switch (seed) {
+                    case "brambleberry":
+                        this.seedsInPlay.push(0);
+                        break;
+                    case "wheat":
+                        this.seedsInPlay.push(1);
+                        break;
+                    case "gilderberry":
+                        this.seedsInPlay.push(2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        //set win conditions
+        this.winCon = scenarioObj.win_conditions;
+        this.weatherEvents = [];
+        //schedule weather
+        const weatherCond = scenarioObj.weather_conditions
+        if(weatherCond != undefined) {
+            switch (weatherCond.length) {
+                case 1:
+                    this.weatherEvents.push(new Weather(weatherCond[0]))
+                    break;
+                case 2:
+                    this.weatherEvents.push(new Weather(weatherCond[0], weatherCond[1]))
+                    break;
+                case 3:
+                    this.weatherEvents.push(new Weather(weatherCond[0], weatherCond[1], weatherCond[2]))
+                    break;
+            }
+        }
     }
 }

@@ -17,6 +17,8 @@ class Load extends Phaser.Scene {
         this.load.image("plantC-0", "plantC-0.png");
         this.load.image("plantC-1", "plantC-1.png");
         this.load.image("plantC-2", "plantC-2.png");
+        this.load.setPath("./src/")
+        this.load.json("ExternalConditions", "DSL/ExternalConditions.json");
     }
 
     create() {
