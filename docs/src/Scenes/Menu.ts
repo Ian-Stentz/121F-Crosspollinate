@@ -1,4 +1,6 @@
 import { game } from "../main.ts";
+/// <reference path=".../lib/phaser.d.ts" />
+
 export class Menu extends Phaser.Scene {
     constructor() {
         super("menuScene");

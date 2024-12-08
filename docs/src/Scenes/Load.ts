@@ -1,4 +1,5 @@
 import { my } from "../Helper_Files/commonLib.ts";
+/// <reference path=".../lib/phaser.d.ts" />
 
 export class Load extends Phaser.Scene {
     constructor() {

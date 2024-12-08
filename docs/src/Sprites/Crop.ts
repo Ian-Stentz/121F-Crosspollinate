@@ -1,4 +1,6 @@
 //Individual crops can be handled by a sprite object instead
+/// <reference path="../../lib/phaser.d.ts" />
+
 export class Crop extends Phaser.GameObjects.Sprite {
     private stages : string[];
 

@@ -1,4 +1,6 @@
 //Individual crops can be handled by a sprite object instead
+/// <reference path="../../lib/phaser.d.ts" />
+
 export class Player extends Phaser.GameObjects.Sprite {
     constructor(scene : Phaser.Scene, x : number, y : number, texture : string, frame : number | undefined) {
         super(scene, x, y, texture, frame);

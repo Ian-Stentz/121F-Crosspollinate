@@ -5,6 +5,7 @@ import { HEIGHT_UNUSED_FOR_TILES, my, AUTO_SAVE_SLOT_NAME, UNDO_APPEND, MAX_SUN,
 import { plantType } from "../Helper_Files/plantType.ts";
 import { Player } from "../Sprites/Player.ts";
 import { Crop } from "../Sprites/Crop.ts";
+/// <reference path=".../lib/phaser.d.ts" />
 
 export class Farm extends Phaser.Scene {
     private eventEmitter : Phaser.Events.EventEmitter;
