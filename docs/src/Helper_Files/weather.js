@@ -6,6 +6,6 @@ class Weather {
     }
 
     frameInWeather(frame) {
-        return frame >= start && (frame <= end || end < 0);
+        return frame >= this.start && (frame <= this.end || this.end < 0);
     }
 }

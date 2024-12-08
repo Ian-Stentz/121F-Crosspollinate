@@ -75,15 +75,16 @@ class Board {
         this.setPlant(i, this.getPlant(i) + deltaCount);
     }
 
-    checkWinConditions(plantKeys, targetCount) {
-        let winCondition = true;
-        for (let key of plantKeys) {
-            if (this.getPlant(key) < targetCount) {
-                winCondition = false;
-                break;
+    checkWinConditions(win_conds) {
+        for(let i = 0; i < win_conds.length; i++) {
+            let win_cond = win_conds[i];
+            if(win_cond[1] == "harvest") {
+                if(this.getPlant(cropToNumber(win_cond[0])) < win_cond[2]) {
+                    return false;
+                }
             }
         }
-        return winCondition
+        return true;
     }
 
     getSaveSize() {

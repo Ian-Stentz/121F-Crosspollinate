@@ -20,3 +20,30 @@ function cellDistManhattan(c1, c2){
 function cellDistOctal(c1, c2){
     return(Math.max(Math.abs(c1[0] - c2[0]), Math.abs(c1[1] - c2[1])));
 }
+
+//TODO : Replace below
+function cropToNumber(cropName) {
+    switch (cropName) {
+        case "wheat":
+            return 0;
+        case "brambleberry":
+            return 1;
+        case "gilderberry":
+            return 2;
+        default:
+            return -1;
+    }
+}
+
+function numberToCrop(number) {
+    switch(number) {
+        case 0:
+            return "wheat";
+        case 1:
+            return "brambleberry";
+        case 2:
+            return "gilderberry";
+        default:
+            return "";
+    }
+}

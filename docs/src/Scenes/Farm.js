@@ -3,6 +3,7 @@ class Farm extends Phaser.Scene {
         super("farmScene");
         this.start_moisture = 0;
         this.SCENARIO = null;
+        this.weatherEvents = [];
     }
 
     preload() {
@@ -202,16 +203,53 @@ class Farm extends Phaser.Scene {
     }
 
     simCells(){
-        const highestSunshine = randIntRange((MAX_SUN + MIN_SUN) / 2, MAX_SUN);
+        // console.log(highestSunshine);
+        // console.log(randTile);
+        console.log(this.weatherEvents);
+        let frameSunMod = 1;
+        let frameMoistureMod = 1;
+        let frameFlatMoisture = 0;
+        for(let i = 0; i < this.weatherEvents.length; i++) {
+            const weather = this.weatherEvents[i];
+            if(weather.frameInWeather(this.board.getCurFrame())) {
+                console.log("WEATHER REPORT: " + weather.weatherType);
+                switch(weather.weatherType) {
+                    case "sunny":
+                        frameSunMod *= 1.2;
+                        break;
+                    case "damp":
+                        frameMoistureMod *= 1.2;
+                        frameFlatMoisture += 1;
+                        break;
+                    case "hot":
+                        frameSunMod *= 1.2;
+                        frameFlatMoisture -= 5;
+                        break;
+                    case "dry":
+                        frameMoistureMod *= 0.6;
+                        frameFlatMoisture -= 1;
+                        break;
+                    case "stormy":
+                        frameMoistureMod *= 2;
+                        frameSunMod *= 0.2;
+                        break;
+                    case "risk_of_rain":
+                        if(randRange(0, 1) > 0.65) {
+                            frameMoistureMod *= 2;
+                            frameSunMod *= 0.2;
+                        }
+                        break;
+                }
+            }
+        }
+        const highestSunshine = randIntRange(MIN_SUN * frameSunMod, MAX_SUN * frameSunMod);
         const randTile = [randIntRange(0, this.board.width), randIntRange(0, this.board.height)];
-        console.log(highestSunshine);
-        console.log(randTile);
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
                 //Load Entry
                 let curEntry = this.board.getEntry(i, j);
                 //Moisture Simulation
-                curEntry.setMoisture(Math.min(curEntry.getMoisture() + Math.floor(Math.random() * WATER_COEFFICIENT), MAX_WATER));
+                curEntry.setMoisture(Math.min(curEntry.getMoisture() + Math.floor(Math.random() * WATER_COEFFICIENT * frameMoistureMod) + frameFlatMoisture, MAX_WATER));
 
                 //Sunshine Simulation
                 curEntry.setSunlight(Math.max(MIN_SUN, Math.round(highestSunshine * Math.max(0.4, (1 - (cellDistManhattan(randTile, [i,j]) * 0.1))))));
@@ -288,7 +326,7 @@ class Farm extends Phaser.Scene {
     }
 
     checkWinCon() {
-        if(this.board.checkWinConditions([0, 1, 2], 1)) {
+        if(this.board.checkWinConditions(this.winCon)) {
             this.gameFrozen = true;
             let fontSettings = {
                 fontFamily: 'utf-8',
@@ -564,7 +602,7 @@ class Farm extends Phaser.Scene {
         for(const scenarioName in scenarios) {
             promptstring += scenarioName + ", "
         }
-        promptstring.slice(0,-2);
+        promptstring = promptstring.slice(0,-2);
         const scenario = prompt(promptstring)
         this.loadScenario(scenario);
     }
@@ -594,40 +632,31 @@ class Farm extends Phaser.Scene {
         }
         //set available plants
         if(scenarioObj.seeds_in_play != undefined) {
-            this.seedsInPlay = []
+            this.seedsInPlay = [];
             for (let seed of scenarioObj.seeds_in_play) {
-                switch (seed) {
-                    case "wheat":
-                        this.seedsInPlay.push(0);
-                        break;
-                    case "brambleberry":
-                        this.seedsInPlay.push(1);
-                        break;
-                    case "gilderberry":
-                        this.seedsInPlay.push(2);
-                        break;
-                    default:
-                        break;
-                }
+                this.seedsInPlay.push(cropToNumber(seed));
+                console.log(cropToNumber(seed));
             }
-            this.switchCurSeed(Math.min(this.seedsInPlay));
+            console.log(this.seedsInPlay);
+            this.switchCurSeed(Math.min(...this.seedsInPlay));
         }
         //set win conditions
         this.winCon = scenarioObj.win_conditions;
-        this.weatherEvents = [];
         //schedule weather
-        const weatherCond = scenarioObj.weather_conditions
-        if(weatherCond != undefined) {
-            switch (weatherCond.length) {
-                case 1:
-                    this.weatherEvents.push(new Weather(weatherCond[0]))
-                    break;
-                case 2:
-                    this.weatherEvents.push(new Weather(weatherCond[0], weatherCond[1]))
-                    break;
-                case 3:
-                    this.weatherEvents.push(new Weather(weatherCond[0], weatherCond[1], weatherCond[2]))
-                    break;
+        const weatherConds = scenarioObj.weather_conditions
+        for(let weatherCond of weatherConds) {
+            if(weatherCond != undefined) {
+                switch (weatherCond.length) {
+                    case 1:
+                        this.weatherEvents.push(new Weather(weatherCond[0]))
+                        break;
+                    case 2:
+                        this.weatherEvents.push(new Weather(weatherCond[0], weatherCond[1]))
+                        break;
+                    case 3:
+                        this.weatherEvents.push(new Weather(weatherCond[0], weatherCond[1], weatherCond[2]))
+                        break;
+                }
             }
         }
     }
