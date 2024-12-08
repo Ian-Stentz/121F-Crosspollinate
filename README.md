@@ -56,7 +56,7 @@ Addendum 12/7/2024: it is possible we thought we were using phaser when we were 
 ## How we satisfied the software requirements
 
 ### F0+F1
-No major changes made
+No major changes made.
 
 ### External DSL for Scenario Design
 ```
@@ -83,3 +83,20 @@ We incidentally already did this, at the end of F1. We moved the visual interfac
 * Our team was originally planning to switch to typescript, but due to some internal difficulties around time management and lack of experience, we were not able to figure out how to set up the environment for typescript without sacrificing time that would be easier spent doing the rest of the assignment. Therefore, even though it would have helped during our F2 and F3 requirements to be able to make use of interfaces, typechecking, and the like, we will leave the only the switch p5-> phaser as our alternate platform switch. 
 * We have not particularly rethought the roles, as we are not really abiding by them anyways. Our workflow tool knowledge is limited, thus our tools lead (the one writing this) is not able to fulfill his role, nor is anyone also able to. 
 * Our code is now a lot more focused on the main menu rather than just the game scene, as a lot of important things regarding loading choices now take place there (load autosave, select scenario on new save).
+
+# Devlog Entry #5 - 12/8/2024 - F3
+
+## How we satisfied the requirements
+
+### F0+F1+F2
+No major changes.
+
+### Internationalization
+
+### Localization
+
+### Mobile Installation
+
+### Mobile Play (Offline)
+
+## Reflection
