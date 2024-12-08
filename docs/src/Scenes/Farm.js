@@ -1,6 +1,8 @@
 class Farm extends Phaser.Scene {
     constructor() {
         super("farmScene");
+        this.start_moisture = 0;
+        this.SCENARIO = null;
     }
 
     preload() {
@@ -12,15 +14,14 @@ class Farm extends Phaser.Scene {
         //any initialization of global variables go here
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
-        let brambleberry = new plantType(7, 25, 15, my.crops.plantA);
-        let wheat = new plantType(10, 20, 10, my.crops.plantB);
+        let wheat = new plantType(7, 25, 15, my.crops.plantA);
+        let brambleberry = new plantType(10, 20, 10, my.crops.plantB);
         let gilderberry = new plantType(4, 40, 25, my.crops.plantC); 
 
         // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
         // seedPacket = Array.from(plantTypes.keys());
 
         this.board = new Board(tileDim.width, tileDim.height);
-        this.board.init();
         this.board.setCurFrame(0);
         this.board.setPlayerLoc(0, 0);
 
@@ -36,7 +37,7 @@ class Farm extends Phaser.Scene {
         this.currentSeed = 0;
         this.gameFrozen = false;
 
-        plantTypes = [brambleberry, wheat, gilderberry];
+        plantTypes = [wheat, brambleberry, gilderberry];
         this.seedsInPlay = [0, 1, 2];
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0); //intializes plants in inventory
@@ -56,8 +57,6 @@ class Farm extends Phaser.Scene {
 
         let scenarios = this.cache.json.get("ExternalConditions");
         console.log(scenarios);
-
-        this.loadScenario("hybridization");
     
         // Check if there is an auto-save
         const savedState = localStorage.getItem(AUTO_SAVE_SLOT_NAME + UNDO_APPEND);
@@ -70,10 +69,16 @@ class Farm extends Phaser.Scene {
             } else {
                 this.removeSlot(AUTO_SAVE_SLOT_NAME);
                 console.log("initializing new game...");
+                this.promptScenario();
+                this.board.init(this.start_moisture);
+                this.updateAllCellTexts();
                 this.record();
                 //this.scene.restart();  // Restart the scene to initialize a new game
             }
         } else {
+            this.promptScenario();
+            this.board.init(this.start_moisture);
+            this.updateAllCellTexts();
             this.record();
         }
         
@@ -93,9 +98,9 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on(`keydown-O`, this.savePrompt, this);
         this.input.keyboard.on(`keydown-P`, this.loadPrompt, this);
         this.input.keyboard.on(`keydown-L`, this.deletePrompt, this);
-        this.input.keyboard.on(`keydown-ONE`, () => {this.currentSeed = 0; this.hudUpdate();}, this);
-        this.input.keyboard.on(`keydown-TWO`, () => { this.currentSeed = 1; this.hudUpdate();}, this);
-        this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2; this.hudUpdate();}, this);
+        this.input.keyboard.on(`keydown-ONE`, () => { this.switchCurSeed(0);}, this);
+        this.input.keyboard.on(`keydown-TWO`, () => { this.switchCurSeed(1);}, this);
+        this.input.keyboard.on(`keydown-THREE`, () => { this.switchCurSeed(2);}, this);
     
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
     }
@@ -107,6 +112,18 @@ class Farm extends Phaser.Scene {
         my.player.setScale(playerScale, playerScale);
         this.movePlayerPos(my.player, 0, 0); // Set initial position
         console.log('Player placed at default position');
+    }
+
+    switchCurSeed(seed) {
+        console.log("seed: " + seed)
+        if(this.SCENARIO != null) {
+            if(this.seedsInPlay.includes(seed)) {
+                this.currentSeed = seed;
+            }
+        } else {
+            this.currentSeed = seed;
+        }
+        this.hudUpdate();
     }
 
     initCropSprites() {
@@ -306,6 +323,7 @@ class Farm extends Phaser.Scene {
 
         localStorage.setItem(saveSlot+UNDO_APPEND, saveString);
         localStorage.setItem(saveSlot+REDO_APPEND, redoString);
+        localStorage.setItem(saveSlot+"SCENARIO", JSON.stringify(this.SCENARIO));
         console.log("Game Saved!");
     }
     
@@ -313,9 +331,11 @@ class Farm extends Phaser.Scene {
     loadGame(saveSlot) {
         const savedState = localStorage.getItem(saveSlot+UNDO_APPEND);
         const redoState = localStorage.getItem(saveSlot+REDO_APPEND);
+        const scenario = JSON.parse(localStorage.getItem(saveSlot+"SCENARIO"));
         
         if (savedState) {
             console.log("Found save, string length:" + savedState.length);
+            this.loadScenarioObj(scenario);
 
             //Gets the amount of save states in the string
             let frames = savedState.length/this.SAVESIZE;
@@ -383,14 +403,18 @@ class Farm extends Phaser.Scene {
         this.restorePlants();
 
         
+        this.updateAllCellTexts();
+        this.hudUpdate();
+
+        //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
+    }
+
+    updateAllCellTexts() {
         for(let i = 0; i < this.board.width; i++) {
             for(let j = 0; j < this.board.height; j++) {
                 this.textUpdate(i, j);
             }
         }
-        this.hudUpdate();
-
-        //may need to save on harvestCrop() and check win conditon here when loading, so if the game has been won recreate win screen
     }
 
     // Method to restore plants based on their type in each cell
@@ -534,24 +558,49 @@ class Farm extends Phaser.Scene {
         console.log(hist);
     }
 
+    promptScenario() {
+        let promptstring = "Select a scenario: "
+        const scenarios = this.cache.json.get("ExternalConditions")
+        for(const scenarioName in scenarios) {
+            promptstring += scenarioName + ", "
+        }
+        promptstring.slice(0,-2);
+        const scenario = prompt(promptstring)
+        this.loadScenario(scenario);
+    }
+
     loadScenario(scenario) {
         const scenarioObj = this.cache.json.get("ExternalConditions")[scenario];
         console.log(scenarioObj);
+        if(scenarioObj == undefined || scenarioObj == null) {
+            return;
+        }
+        this.SCENARIO = scenarioObj;
+        this.loadScenarioObj(scenarioObj);
+    }
+
+    loadScenarioObj(scenarioObj) {
+        if(scenarioObj == null || scenarioObj == undefined) {
+            this.SCENARIO = null;
+            return;
+        }
+        this.SCENARIO = scenarioObj;
+        console.log("OBJ: " + JSON.stringify(scenarioObj));
         //set start moisture
-        if(scenarioObj.startMoisture != undefined) {
-            this.startMoisture = scenarioObj.startMoisture
+        if(scenarioObj.start_moisture != undefined) {
+            this.start_moisture = scenarioObj.start_moisture
         } else {
-            this.startMoisture = 0;
+            this.start_moisture = 0;
         }
         //set available plants
         if(scenarioObj.seeds_in_play != undefined) {
             this.seedsInPlay = []
             for (let seed of scenarioObj.seeds_in_play) {
                 switch (seed) {
-                    case "brambleberry":
+                    case "wheat":
                         this.seedsInPlay.push(0);
                         break;
-                    case "wheat":
+                    case "brambleberry":
                         this.seedsInPlay.push(1);
                         break;
                     case "gilderberry":
@@ -561,6 +610,7 @@ class Farm extends Phaser.Scene {
                         break;
                 }
             }
+            this.switchCurSeed(Math.min(this.seedsInPlay));
         }
         //set win conditions
         this.winCon = scenarioObj.win_conditions;

@@ -59,6 +59,18 @@ Addendum 12/7/2024: it is possible we thought we were using phaser when we were 
 No major changes made
 
 ### External DSL for Scenario Design
+```
+[monoculture]
+start_moisture = 10
+seeds_in_play = ["brambleberry","wheat","gilderberry"]
+win_conditions = [
+    ["brambleberry","harvest",1],
+    ["wheat","harvest",1],
+    ["gilderberry","harvest",1]
+]
+weather_conditions = [["sunny"],["storm",30,50]]
+```
+For our DSL we are using TOML to design it, and then translating it to JSON in order for easier integration into the project with phaser. We picked TOML because it was quick and easy to use. This block means that the intial board state has each tile start with 10 moisture in it, that the plants in play both in terms of what the player can plant and what can be hybridized is limited to "brambleberry" "wheat" and "gilderberry" and that the win conditions are to harvest 1 of each. The weather conditions for this scenario are "sunny" which has no scheduled start and end frame and thus lasts the whole session, meaning tiles will be on average sunnier, and "storm" from frames (30,50) inclusive, which will blot out the sun providing much less sunlight but provide much more moisture while it passes through.
 
 ### Internal DSL for Plants and Growth Conditions
 

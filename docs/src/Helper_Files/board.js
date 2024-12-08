@@ -11,12 +11,12 @@ class Board {
         this.inventoryView = new DataView(this.board, FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES, INVENTORY_ENTRY_BYTES * PLANT_TYPES);
     }
 
-    init() {
+    init(startMoisture = 0) {
         for(let i = 0; i < this.width; i++) {
             for(let j = 0; j < this.height; j++) {
                 let curEntry = this.getEntry(i, j);
                 curEntry.setSunlight(10);
-                curEntry.setMoisture(0);
+                curEntry.setMoisture(startMoisture);
                 curEntry.setCrop(null);
                 curEntry.setGrowth(0);
             }

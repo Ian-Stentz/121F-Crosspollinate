@@ -1,114 +1,127 @@
 {
-    "foul_weather": {
-      "seeds_in_play": [
-        "brambleberry",
-        "wheat",
-        "gilderberry"
+  "foul_weather": {
+    "seeds_in_play": [
+      "brambleberry",
+      "wheat",
+      "gilderberry"
+    ],
+    "start_moisture": 0,
+    "weather_conditions": [
+      [
+        "damp",
+        0,
+        3
       ],
-      "start_moisture": 0,
-      "weather_conditions": [
-        [
-          "damp",
-          0,
-          3
-        ],
-        [
-          "hot",
-          10,
-          15
-        ],
-        [
-          "dry",
-          10,
-          20
-        ],
-        [
-          "risk_of_rain",
-          20,
-          30
-        ],
-        [
-          "storm",
-          30,
-          50
-        ]
+      [
+        "hot",
+        10,
+        15
       ],
-      "win_conditions": [
-        [
-          "brambleberry",
-          "harvest",
-          1
-        ],
-        [
-          "wheat",
-          "harvest",
-          1
-        ],
-        [
-          "gilderberry",
-          "harvest",
-          1
-        ]
+      [
+        "dry",
+        10,
+        20
+      ],
+      [
+        "risk_of_rain",
+        20,
+        30
+      ],
+      [
+        "storm",
+        30,
+        50
       ]
-    },
-    "hybridization": {
-      "seeds_in_play": [
+    ],
+    "win_conditions": [
+      [
         "brambleberry",
+        "harvest",
+        1
+      ],
+      [
         "wheat",
-        "gilderberry"
+        "harvest",
+        1
       ],
-      "start_moisture": 10,
-      "weather_conditions": [
-        [
-          "sunny"
-        ]
-      ],
-      "win_conditions": [
-        [
-          "brambleberry",
-          "harvest",
-          1
-        ],
-        [
-          "wheat",
-          "harvest",
-          1
-        ],
-        [
-          "gilderberry",
-          "harvest",
-          1
-        ]
+      [
+        "gilderberry",
+        "harvest",
+        1
       ]
-    },
-    "monoculture": {
-      "seeds_in_play": [
+    ]
+  },
+  "hybridization": {
+    "seeds_in_play": [
+      "brambleberry",
+      "wheat",
+      "gilderberry"
+    ],
+    "start_moisture": 10,
+    "weather_conditions": [
+      [
+        "sunny"
+      ]
+    ],
+    "win_conditions": [
+      [
         "brambleberry",
+        "harvest",
+        1
+      ],
+      [
         "wheat",
-        "gilderberry"
+        "harvest",
+        1
       ],
-      "start_moisture": 0,
-      "weather_conditions": [
-        [
-          "sunny"
-        ]
-      ],
-      "win_conditions": [
-        [
-          "brambleberry",
-          "harvest",
-          1
-        ],
-        [
-          "wheat",
-          "harvest",
-          1
-        ],
-        [
-          "gilderberry",
-          "harvest",
-          1
-        ]
+      [
+        "gilderberry",
+        "harvest",
+        1
       ]
-    }
+    ]
+  },
+  "monoculture": {
+    "seeds_in_play": [
+      "wheat"
+    ],
+    "start_moisture": 0,
+    "win_conditions": [
+      [
+        "wheat",
+        "harvest",
+        10
+      ]
+    ]
+  },
+  "tutorial": {
+    "seeds_in_play": [
+      "brambleberry",
+      "wheat",
+      "gilderberry"
+    ],
+    "start_moisture": 5,
+    "weather_conditions": [
+      [
+        "sunny"
+      ]
+    ],
+    "win_conditions": [
+      [
+        "brambleberry",
+        "harvest",
+        1
+      ],
+      [
+        "wheat",
+        "harvest",
+        1
+      ],
+      [
+        "gilderberry",
+        "harvest",
+        1
+      ]
+    ]
   }
+}
