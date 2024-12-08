@@ -25,8 +25,7 @@ class Farm extends Phaser.Scene {
         this.board.setPlayerLoc(0, 0);
 
         this.history = [];
-        this.fHistory = [];
-        this.redo = [];
+        this.redoStack = [];
 
         this.currentSeed = 0;
         this.gameFrozen = false;
@@ -53,7 +52,6 @@ class Farm extends Phaser.Scene {
                 this.scene.restart();  // Restart the scene to initialize a new game
             }
         } else {
-            this.init(); // Initialize a new game if no saved state
             this.tileWidth = game.config.width / this.board.width;
             this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
     
@@ -81,6 +79,7 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on('keydown-S', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } }, this);
         this.input.keyboard.on('keydown-D', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } }, this);
         this.input.keyboard.on('keydown-U', () => { if (!this.gameFrozen) { this.undo() } }, this);
+        this.input.keyboard.on('keydown-I', () => { if (!this.gameFrozen) { this.redo() } }, this);
         this.input.on('pointerdown', (e) => {
             if (e.button == 0) {
                 if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
@@ -97,6 +96,9 @@ class Farm extends Phaser.Scene {
         //no update, only our turn-based tick
         this.board.incrCurFrame();
         this.simCells();
+
+        //Clears redo stack
+        this.redoStack = [];
 
         //Adds current state to the history stack
         this.record();
@@ -225,13 +227,14 @@ class Farm extends Phaser.Scene {
         //let curEntry = this.board.getEntry(i, j);
         if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
             this.cropSprites[[u,v].toString()].remove();
+            this.cropSprites[[u,v].toString()] = null;
             this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
             entry.setGrowth(0);
             this.eventEmitter.emit("checkWin");
             this.hudUpdate();
+            this.tick();
         }
-        this.tick();
     }
 
     checkWinCon() {
@@ -356,31 +359,85 @@ class Farm extends Phaser.Scene {
     record(){ //adds current game state to history array
 
         // Gets a copy of the ArrayBuffer containing the entire game state
-        //const boardState = new ArrayBuffer(this.board.getBoard().slice(0));
-        const boardState = this.board.getBoard().slice(0); 
+        const boardState = Board.arrayBufferToBase64(this.board.getBoard());
+        //const boardState = this.board.getBoard().slice(0); 
         this.history.push(boardState);
-        this.fHistory.push(this.board.getCurFrame());
-        console.log(this.history.length);
-        console.log(this.fHistory);
+        console.log("Length of history: " + this.history.length);
+        this.truehistory();
     }
+
+    /*undo(){
+        if(this.history.length > 0){
+            const state = this.history.pop();
+
+            if(state != null){
+                this.redoStack.push(this.copy(this.board.getBoard()));
+                this.loadState(state);
+                console.log("Undid last action.");
+            }
+            
+            console.log("Length of history: " + this.history.length);
+            this.truehistory();
+            
+            
+        }
+        else{
+            console.log("Could not undo any further.");
+        }
+    }*/
 
     undo(){
         if(this.history.length > 1){
             const state = this.history.pop();
-            this.fHistory.pop();
 
             if(state != null){
-                this.redo.push(state);
+                this.redoStack.push(state);
             }
             
-            console.log(this.history.length);
-            console.log(this.fHistory);
+            console.log("Length of history: " + this.history.length);
+            this.truehistory();
             
-            this.loadState(this.history[this.history.length - 1]);
+            this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
             console.log("Undid last action.");
         }
         else{
             console.log("Could not undo any further.");
         }
+    }
+
+    redo(){
+        if(this.redoStack.length > 0){
+            const state = this.redoStack.pop();
+
+            if(state != null){
+                this.history.push(state);
+            }
+            
+            console.log("Length of history: " + this.history.length);
+            this.truehistory();
+            
+            this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
+            console.log("Redid last undo.");
+        }
+        else{
+            console.log("Redo stack empty.");
+        }
+    }
+
+    truehistory(){
+        const hist = [];
+        for(let i = 0; i < this.history.length; i++){
+            const hArr = Board.base64ToArrayBuffer(this.history[i])
+            const viewer = new DataView(hArr, 0, FRAME_BYTES);
+            hist[i] = viewer.getUint16(0);
+        }
+        console.log("Printing true history");
+        console.log(hist);
+    }
+
+    copy(src)  {
+        var dst = new ArrayBuffer(src.byteLength);
+        new Uint8Array(dst).set(new Uint8Array(src));
+        return dst;
     }
 }
