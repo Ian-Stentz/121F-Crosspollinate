@@ -51,6 +51,7 @@ class Farm extends Phaser.Scene {
 
         this.createPlayer();
 
+        //TODO: Internationalize
         this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"#FEE"}).setOrigin(0);
         this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"#EFE"}).setOrigin(0);
         
@@ -63,6 +64,7 @@ class Farm extends Phaser.Scene {
         const savedState = localStorage.getItem(AUTO_SAVE_SLOT_NAME + UNDO_APPEND);
         if (savedState) {
             // Prompt the player to continue or start a new game
+            //TODO: Internationalize
             const continueGame = confirm("Do you want to continue from where you left off?");
             if (continueGame) {
                 console.log("reloading past game...");
@@ -272,6 +274,7 @@ class Farm extends Phaser.Scene {
         this.eventEmitter.emit("updateCell" + x + y);
     }
 
+    //TODO : internationalize
     hudUpdate(){
         this.heldseed.text = 'Held Seed: Plant ' + (this.currentSeed + 1);
         let harvestText = "Harvested Total: " + this.board.getPlant("0") + ", " + this.board.getPlant("1") + ", " + this.board.getPlant("2");  // can also call e.g. this.board.getPlant("wheat")
@@ -526,6 +529,7 @@ class Farm extends Phaser.Scene {
         }
     }
 
+    //TODO : prompts internationalized
     savePrompt() {
         console.log("SAVEPROMPT");
         let slot = prompt("Which file would you like to save to? (1-6):", 1)
@@ -597,6 +601,7 @@ class Farm extends Phaser.Scene {
     }
 
     promptScenario() {
+        //TODO : Internationalize
         let promptstring = "Select a scenario: "
         const scenarios = this.cache.json.get("ExternalConditions")
         for(const scenarioName in scenarios) {

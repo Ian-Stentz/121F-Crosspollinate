@@ -14,6 +14,7 @@ class Menu extends Phaser.Scene {
     create() {
         //creation of world objects goes here
 
+        //TODO: Internationalize
         this.title = this.add.text(config.width/2, config.height/4, 'Farm Simulator', {fontSize: '35px'}).setOrigin(0.5);
         let underline = this.add.rectangle(config.width/2, (1.15*config.height)/4, this.title.width, 10, 0xFFFFFF, .5);
 
