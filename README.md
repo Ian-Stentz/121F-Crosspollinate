@@ -48,3 +48,22 @@ Since F0, we have converted the project from using a sketch.js based approach - 
 
 ## Reflection
 As mentioned in the previous section, we decided to move from a frame-by-frame system to a phaser scene-based approach, which looks more like the average game engine. In addition, we have again postponed the hybridization, as we figured it wouldn't rock the boat with how F1 gets implemented but would be annoying to do half-way through. Additionally, looking ahead to F2, it seems like the perfect time to implement it, as it does make the unique growth requirements that are in the requirements for the internal DSL. We have mostly stuck to the choices for the roles, although for the most part the roles have broken down as it's all hands on deck for engineering, whoever can get what done. 
+
+Addendum 12/7/2024: it is possible we thought we were using phaser when we were using p5 the whole time :/ whoops. But since this was done refactoring between F1 and F2, perhaps we can use this for the alternate platform
+
+# Devlog Entry #4 - 12/8/2024 - F2
+
+## How we satisfied the software requirements
+
+### F0+F1
+No major changes made
+
+### External DSL for Scenario Design
+
+### Internal DSL for Plants and Growth Conditions
+
+### Switch to Alternate platform
+
+We incidentally already did this, at the end of F1. We moved the visual interface from p5 to phaser. Much of the implementation code changed, but due to a large reliance on helper functions and specifically board.js, it was easier than expected. The main issue was the move from the draw() for text and sprites to objects, which was amended using sprite subclasses and event dispatchers. Our original plan was to move to typescript, which we did also try to do more recently, but due to the team's unfamiliarity with setting up the environment on our own, we spent hours gaining only headaches and opted to spend our time elsewhere.
+
+## Reflection
