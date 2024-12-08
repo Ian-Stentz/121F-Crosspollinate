@@ -1,5 +1,5 @@
 //Individual crops can be handled by a sprite object instead
-class Crop extends Phaser.GameObjects.Sprite {
+export class Crop extends Phaser.GameObjects.Sprite {
     private stages : string[];
 
 

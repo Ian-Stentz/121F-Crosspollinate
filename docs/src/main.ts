@@ -1,7 +1,10 @@
 /// <reference path="../lib/phaser.d.ts" />
+import { Load } from "./Scenes/Load.ts";
+import { Farm } from "./Scenes/Farm.ts";
+import { Menu } from "./Scenes/Menu.ts";
 
 // game config
-let config = {
+const config = {
     parent: 'phaser-game',
     type: Phaser.WEBGL,
     render: {
@@ -13,29 +16,4 @@ let config = {
     scene: [Load, Farm, Menu]
 }
 
-const game = new Phaser.Game(config);
-//gonna get reworked anyways who cares
-const my = {crops : Map<string, plantFrames>, player : Player};
-const tileDim = { width: 6, height :6};
-let plantTypes : plantType[];
-
-const MIN_SUN = 0;
-const MAX_SUN = 20;
-const WATER_COEFFICIENT = 12;
-const MAX_WATER = 50;
-const HEIGHT_UNUSED_FOR_TILES = 50;
-
-const FRAME_BYTES = 2;
-const COORD_BYTES = 2;
-const SUN_BYTES = 1;
-const MOIST_BYTES = 1;
-const CROP_BYTES = 1;
-const GROWTH_BYTES = 1;
-const ENTRY_BYTES = SUN_BYTES + MOIST_BYTES + CROP_BYTES + GROWTH_BYTES;
-const INVENTORY_ENTRY_BYTES = 2;
-const PLANT_TYPES = 3;
-const STATE_SIZE = FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES + INVENTORY_ENTRY_BYTES * PLANT_TYPES;
-
-const AUTO_SAVE_SLOT_NAME = 'autoSave';
-const UNDO_APPEND = 'History';
-const REDO_APPEND = 'Redo';
+export const game = new Phaser.Game(config);

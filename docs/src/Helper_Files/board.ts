@@ -1,4 +1,6 @@
-class Board {
+import { FRAME_BYTES, COORD_BYTES, ENTRY_BYTES, INVENTORY_ENTRY_BYTES, PLANT_TYPES, gridLoc, SUN_BYTES, MOIST_BYTES, CROP_BYTES } from "./commonLib.ts";
+
+export class Board {
     public readonly width : number;
     public readonly height : number;
     public board : ArrayBuffer;
@@ -21,7 +23,7 @@ class Board {
     init() : void {
         for(let i = 0; i < this.width; i++) {
             for(let j = 0; j < this.height; j++) {
-                let curEntry : BoardEntry = this.getEntry({x : i, y : j});
+                const curEntry : BoardEntry = this.getEntry({x : i, y : j});
                 curEntry.sunlight = 10;
                 curEntry.moisture = 0;
                 curEntry.crop = undefined;
@@ -85,7 +87,7 @@ class Board {
     //TODO : needs to be updated to interpret the DSL conditions, moved away from board
     checkWinConditions(plantKeys : number[], targetCount : number) : boolean{
         let winCondition : boolean = true;
-        for (let key of plantKeys) {
+        for (const key of plantKeys) {
             if (this.getPlant(key) < targetCount) {
                 winCondition = false;
                 break;
@@ -95,7 +97,7 @@ class Board {
     }
 
     getSaveSize() : number {
-        let b64 = Board.arrayBufferToBase64(this.board);
+        const b64 = Board.arrayBufferToBase64(this.board);
         return b64.length;
     }
 
@@ -107,12 +109,12 @@ class Board {
         for (let i = 0; i < length; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
-        return window.btoa(binary); // Base64 encode the binary string
+        return btoa(binary); // Base64 encode the binary string
     }
 
     // Static helper function to convert Base64 back to ArrayBuffer
     static base64ToArrayBuffer(base64 : string) {
-        const binaryString = window.atob(base64); // Base64 decode
+        const binaryString = atob(base64); // Base64 decode
         const length = binaryString.length;
         const buffer = new ArrayBuffer(length);
         const view = new Uint8Array(buffer);
@@ -155,7 +157,7 @@ class BoardEntry {
     }
 
     get crop() : number | undefined{
-        let crop = this.dView.getUint8(this.cropOffset);
+        const crop = this.dView.getUint8(this.cropOffset);
         if(crop > 0) {
             return crop - 1;
         } else {

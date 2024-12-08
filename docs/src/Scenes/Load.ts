@@ -1,4 +1,6 @@
-class Load extends Phaser.Scene {
+import { my } from "../Helper_Files/commonLib.ts";
+
+export class Load extends Phaser.Scene {
     constructor() {
         super("loadScene");
     }
@@ -22,9 +24,9 @@ class Load extends Phaser.Scene {
     create() {
         //creation of world objects goes here
 
-        my.crops["plantA"] = ["plantA-0", "plantA-1", "plantA-2", "plantA-3"];
-        my.crops["plantB"] = ["plantB-0", "plantB-1", "plantB-2", "plantB-3"];
-        my.crops["plantC"] = ["plantC-0", "plantC-1", "plantC-2"];
+        my.crops.set("plantA", ["plantA-0", "plantA-1", "plantA-2", "plantA-3"]);
+        my.crops.set("plantB", ["plantB-0", "plantB-1", "plantB-2", "plantB-3"]);
+        my.crops.set("plantC", ["plantC-0", "plantC-1", "plantC-2"]);
 
         // Testing if this can automate (ish) crop sprites
         // this.anims.create({

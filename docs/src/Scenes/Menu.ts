@@ -1,7 +1,5 @@
-class Menu extends Phaser.Scene {
-    private title : Phaser.GameObjects.Text;
-    private startgame : Phaser.GameObjects.Text;
-
+import { game } from "../main.ts";
+export class Menu extends Phaser.Scene {
     constructor() {
         super("menuScene");
     }
@@ -14,24 +12,20 @@ class Menu extends Phaser.Scene {
         //any initialization of global variables go here
     }
 
+    sceneStart() {
+        this.scene.start('farmScene');
+    }
+
     create() {
         //creation of world objects goes here
+        if(typeof game.config.width === 'number' && typeof game.config.height === 'number') {
+            const title = this.add.text(game.config.width/2, game.config.height/4, 'Farm Simulator', {fontSize: '35px'}).setOrigin(0.5);
+            this.add.rectangle(game.config.width/2, (1.15*game.config.height)/4, title.width, 10, 0xFFFFFF, .5);
 
-        this.title = this.add.text(config.width/2, config.height/4, 'Farm Simulator', {fontSize: '35px'}).setOrigin(0.5);
-        let underline = this.add.rectangle(config.width/2, (1.15*config.height)/4, this.title.width, 10, 0xFFFFFF, .5);
-
-        this.startgame = this.add.text(config.width/2, 3*config.height/5, 'Start Farming', {fontSize: '18px'}).setOrigin(0.5);
-        this.startgame.setInteractive(); const self = this;
-        this.input.on('gameobjectdown', function () {
-
-            self.scene.start('farmScene');
-    
-        });
+            const startgame = this.add.text(game.config.width/2, 3*game.config.height/5, 'Start Farming', {fontSize: '18px'}).setOrigin(0.5);
+            startgame.setInteractive();
+            this.input.on('gameobjectdown', this.sceneStart);
+        }
+        
     }
-
-    update() {
-        //update function goes here
-    }
-
-    //helper functions go here
 }

@@ -1,7 +1,7 @@
 //honestly should be data stored in a JSON not a bunch of objects
 //Update from F2: well would you look at that
 //don't care about updating to TS, it's going away anyways
-class plantType {
+export class plantType {
     public sunReq : number;
     public moistureReq : number;
     public moistureConsumption : number;
@@ -14,7 +14,7 @@ class plantType {
         this.growthFrames = growthFrames;
     }
 
-    getGrowthStage(stage) {
+    getGrowthStage(stage : number) {
         return this.growthFrames[stage];
     }
 
@@ -22,7 +22,7 @@ class plantType {
         return this.growthFrames.length - 1;
     }
 
-    canGrow(sun, moisture, stage){
+    canGrow(sun : number, moisture : number, stage : number){
         //console.log(`sun required ${this.sunReq}, has ${sun}`);
         //console.log(`moisture required ${this.moistureReq}, has ${moisture}`);
         //console.log(`Max growth ${this.getLastStage()}, currently ${stage}`);
