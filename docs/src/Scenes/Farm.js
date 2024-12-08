@@ -46,22 +46,12 @@ class Farm extends Phaser.Scene {
         //Create all the objects needed for this scene
         this.drawBoard();
 
-        console.log("Initializing new player...");
-        my.player = new Player(this, 0, 0, "player", null);
-        let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
-        my.player.setScale(playerScale, playerScale);
-        this.movePlayerPos(my.player, 0, 0); // Set initial position
-        console.log('Player placed at default position');
+        this.createPlayer();
 
         this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
         this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
         
-        this.cropSprites = {};
-        for(let i = 0; i < this.board.width; i++) {
-            for(let j = 0; j < this.board.height; j++) {
-                this.addCropSprite(i, j);
-            }
-        }
+        this.initCropSprites();
     
         // Check if there is an auto-save
         const savedState = localStorage.getItem('autoSaveHistory');
@@ -99,6 +89,24 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2; this.hudUpdate();}, this);
     
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
+    }
+
+    createPlayer() {
+        console.log("Initializing new player...");
+        my.player = new Player(this, 0, 0, "player", null);
+        let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
+        my.player.setScale(playerScale, playerScale);
+        this.movePlayerPos(my.player, 0, 0); // Set initial position
+        console.log('Player placed at default position');
+    }
+
+    initCropSprites() {
+        this.cropSprites = {};
+        for(let i = 0; i < this.board.width; i++) {
+            for(let j = 0; j < this.board.height; j++) {
+                this.addCropSprite(i, j);
+            }
+        }
     }
 
     tick() {
