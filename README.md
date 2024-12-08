@@ -31,7 +31,7 @@ Our initial plan was to use the Phaser library however as we began working throu
 # Devlog Entry #3 - 12/7/2024 - F1
 
 ## How we satisfied the software requirements
-Since F0, we have converted the project from using a sketch.js based approach - drawing everything manually each frame through a call to the draw function - to a more phaser-based approach. We are now using Phaser's scene system to define a load scene which initializes our assets, a main menu scene, and a game scene which can be cycled between. Now instead of calling draw() each frame for each scene, we add sprite and text objects to the scene and let it handle drawing those individually each frame. 
+Since F0, we have converted the project from p5 to phaser, aka moving from a sketch.js draw everything at once based approach to phaser's game objects handle their own draw calls based approach. We are now using Phaser's scene system to define a load scene which initializes our assets, a main menu scene, and a game scene which can be cycled between. Now instead of calling draw() each frame for each scene, we add sprite and text objects to the scene and let it handle drawing those individually each frame. 
 * F0.a: Now the player is represented by an object inheriting from sprite that moves by calling a move method which changes the sprite's x and y values. Saving and loading the player's state does not create a new sprite, instead simply moving the sprite. This means the sprite gets created once and only once per session, at the beginning of the session
 * F0.b: Same as last week
 * F0.c: Crops are also their own sprite objects. Similar to the player, they are pooled by being created once and only once, and are made visible and invisible as necessary, their texture and growth data being overwritten whenever a new crop is planted on that tile.
@@ -48,3 +48,5 @@ Since F0, we have converted the project from using a sketch.js based approach - 
 
 ## Reflection
 As mentioned in the previous section, we decided to move from a frame-by-frame system to a phaser scene-based approach, which looks more like the average game engine. In addition, we have again postponed the hybridization, as we figured it wouldn't rock the boat with how F1 gets implemented but would be annoying to do half-way through. Additionally, looking ahead to F2, it seems like the perfect time to implement it, as it does make the unique growth requirements that are in the requirements for the internal DSL. We have mostly stuck to the choices for the roles, although for the most part the roles have broken down as it's all hands on deck for engineering, whoever can get what done. 
+
+Update later 12/7/2024: it is possible we thought we were using phaser when we were using p5 the whole time :/ whoops. I don't know whether or not it will count for the alternate platform because we did it so early but we did in fact do it.
