@@ -34,5 +34,10 @@ Our initial plan was to use the Phaser library however as we began working throu
 Since F0, we have converted the project from using a sketch.js based approach - drawing everything manually each frame through a call to the draw function - to a more phaser-based approach. We are now using Phaser's scene system to define a load scene which initializes our assets, a main menu scene, and a game scene which can be cycled between. Now instead of calling draw() each frame for each scene, we add sprite and text objects to the scene and let it handle drawing those individually each frame. 
 * F0.a: Now the player is represented by an object inheriting from sprite that moves by calling a move method which changes the sprite's x and y values. Saving and loading the player's state does not create a new sprite, instead simply moving the sprite. This means the sprite gets created once and only once per session, at the beginning of the session
 * F0.b: Same as last week
-* F0.c: Crops are also their own sprite objects. Similar to the player, they are pooled by being created once and only once
-* F0.d:
+* F0.c: Crops are also their own sprite objects. Similar to the player, they are pooled by being created once and only once, and are made visible and invisible as necessary, their texture and growth data being overwritten whenever a new crop is planted on that tile.
+* F0.d: Same as last week, except the text display is created once and updated with event handlers on a cell-by-cell basis
+* F0.e: Same as last week
+* F0.f: Same as last week, except now a newly planted crop is planted before sun water and growth are updated that frame, potentially growing it immediately.
+* F0.g: Same as last week
+
+* F1.a: We are representing the Array in AoS structure, holding a header with basic singleton data like player location and the current frame, and then a list of structures representing the data of both ground conditions and plant conditions for each cell in individual structures, and then placed inventory. We did this so that we could iterate through the array entry-by-entry and update each one at a time by grabbing a chunk of data just once. 
