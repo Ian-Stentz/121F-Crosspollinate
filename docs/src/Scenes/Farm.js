@@ -54,15 +54,15 @@ class Farm extends Phaser.Scene {
         this.initCropSprites();
     
         // Check if there is an auto-save
-        const savedState = localStorage.getItem('autoSaveHistory');
+        const savedState = localStorage.getItem(AUTO_SAVE_SLOT_NAME + UNDO_APPEND);
         if (savedState) {
             // Prompt the player to continue or start a new game
             const continueGame = confirm("Do you want to continue from where you left off?");
             if (continueGame) {
                 console.log("reloading past game...");
-                this.loadGame('autoSave');
+                this.loadGame(AUTO_SAVE_SLOT_NAME);
             } else {
-                localStorage.removeItem('autoSaveHistory'); // Clear the saved game if they start a new game
+                this.removeSlot(AUTO_SAVE_SLOT_NAME);
                 console.log("initializing new game...");
                 this.record();
                 //this.scene.restart();  // Restart the scene to initialize a new game
@@ -84,6 +84,9 @@ class Farm extends Phaser.Scene {
                 if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
             }
         });
+        this.input.keyboard.on(`keydown-O`, this.savePrompt, this);
+        this.input.keyboard.on(`keydown-P`, this.loadPrompt, this);
+        this.input.keyboard.on(`keydown-L`, this.deletePrompt, this);
         this.input.keyboard.on(`keydown-ONE`, () => {this.currentSeed = 0; this.hudUpdate();}, this);
         this.input.keyboard.on(`keydown-TWO`, () => { this.currentSeed = 1; this.hudUpdate();}, this);
         this.input.keyboard.on(`keydown-THREE`, () => { this.currentSeed = 2; this.hudUpdate();}, this);
@@ -121,7 +124,7 @@ class Farm extends Phaser.Scene {
         this.record();
 
         // Auto-save at the end of each tick
-        this.saveGame("autoSave");
+        this.saveGame(AUTO_SAVE_SLOT_NAME);
     }
 
     //helper functions go here
@@ -295,15 +298,15 @@ class Farm extends Phaser.Scene {
 
         // Save the Base64-encoded history and redo strings
 
-        localStorage.setItem(saveSlot+'History', saveString);
-        localStorage.setItem(saveSlot+'Redo', redoString);
+        localStorage.setItem(saveSlot+UNDO_APPEND, saveString);
+        localStorage.setItem(saveSlot+REDO_APPEND, redoString);
         console.log("Game Saved!");
     }
     
 
     loadGame(saveSlot) {
-        const savedState = localStorage.getItem(saveSlot+'History');
-        const redoState = localStorage.getItem(saveSlot+'Redo');
+        const savedState = localStorage.getItem(saveSlot+UNDO_APPEND);
+        const redoState = localStorage.getItem(saveSlot+REDO_APPEND);
         
         if (savedState) {
             console.log("Found save, string length:" + savedState.length);
@@ -311,6 +314,8 @@ class Farm extends Phaser.Scene {
             //Gets the amount of save states in the string
             let frames = savedState.length/this.SAVESIZE;
             console.log("Save contains " + frames + " frames of size " + this.SAVESIZE);
+            this.history = [];
+            this.redoStack = [];
 
             //slices the main string into state-sized pieces and loads them into the history stack
             for(let f = 0; f < frames; f++){
@@ -342,8 +347,10 @@ class Farm extends Phaser.Scene {
             }
             
             console.log("Game Loaded!");
+            return true;
         } else {
             console.log("No saved game found.");
+            return false;
         }
     }
 
@@ -423,7 +430,7 @@ class Farm extends Phaser.Scene {
             this.truehistory();
             
             this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
-            this.saveGame('autoSave');
+            this.saveGame(AUTO_SAVE_SLOT_NAME);
             console.log("Undid last action.");
         }
         else{
@@ -443,12 +450,71 @@ class Farm extends Phaser.Scene {
             this.truehistory();
             
             this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
-            this.saveGame('autoSave');
+            this.saveGame(AUTO_SAVE_SLOT_NAME);
             console.log("Redid last undo.");
         }
         else{
             console.log("Redo stack empty.");
         }
+    }
+
+    savePrompt() {
+        console.log("SAVEPROMPT");
+        let slot = prompt("Which file would you like to save to? (1-6):", 1)
+        //I call upon thee, dark magic of the regex
+        const promptRe = /^[1-6]{1}$/;
+        slot = promptRe.exec(slot);
+        if(slot != null) {
+            this.saveGame(slot);
+            confirm("Save Successful");
+        } else {
+            let choice = confirm("Invalid Slot, would you like to try again?");
+            if(choice) {
+                this.savePrompt();
+            }
+        }
+    }
+
+    loadPrompt() {
+        console.log("LOADPROMPT");
+        let slot = prompt("Which file would you like to load from? (1-6):", 1)
+        //I call upon thee, dark magic of the regex
+        const promptRe = /^[1-6]{1}$/;
+        slot = promptRe.exec(slot);
+        if(slot != null) {
+            if(!this.loadGame(slot)) {
+                confirm("No data found in slot " + slot);
+            }
+        } else {
+            let choice = confirm("Invalid Slot, would you like to try again?");
+            if(choice) {
+                this.loadPrompt();
+            }
+        }
+    }
+
+    deletePrompt() {
+        console.log("DELETEPROMPT");
+        let slot = prompt("Which file would you like to delete? (1-6):", 1)
+        //I call upon thee, dark magic of the regex
+        const promptRe = /^[1-6]{1}$/;
+        slot = promptRe.exec(slot);
+        if(slot != null) {
+            let choice = confirm("Are you sure you want to remove slot " + slot + "?")
+            if(choice) {
+                this.removeSlot(slot);
+            }
+        } else {
+            let choice = confirm("Invalid Slot, would you like to try again?");
+            if(choice) {
+                this.deletePrompt();
+            }
+        }
+    }
+
+    removeSlot(slot) {
+        localStorage.removeItem(slot + UNDO_APPEND); // Clear the saved game if they start a new game
+        localStorage.removeItem(slot + REDO_APPEND);
     }
 
     truehistory(){
@@ -460,11 +526,5 @@ class Farm extends Phaser.Scene {
         }
         console.log("Printing true history");
         console.log(hist);
-    }
-
-    copy(src)  {
-        var dst = new ArrayBuffer(src.byteLength);
-        new Uint8Array(dst).set(new Uint8Array(src));
-        return dst;
     }
 }
