@@ -308,9 +308,6 @@ class Farm extends Phaser.Scene {
             let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
             my.player.setScale(playerScale, playerScale);
         }
-
-        //console.log(my.player);
-
         
         // Move player sprite to restored position
         this.movePlayerPos(my.player, playerPos.x, playerPos.y);
@@ -361,31 +358,10 @@ class Farm extends Phaser.Scene {
 
         // Gets a copy of the ArrayBuffer containing the entire game state
         const boardState = Board.arrayBufferToBase64(this.board.getBoard());
-        //const boardState = this.board.getBoard().slice(0); 
         this.history.push(boardState);
         console.log("Length of history: " + this.history.length);
         this.truehistory();
     }
-
-    /*undo(){
-        if(this.history.length > 0){
-            const state = this.history.pop();
-
-            if(state != null){
-                this.redoStack.push(this.copy(this.board.getBoard()));
-                this.loadState(state);
-                console.log("Undid last action.");
-            }
-            
-            console.log("Length of history: " + this.history.length);
-            this.truehistory();
-            
-            
-        }
-        else{
-            console.log("Could not undo any further.");
-        }
-    }*/
 
     undo(){
         if(this.history.length > 1){
