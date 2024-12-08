@@ -24,6 +24,9 @@ class Farm extends Phaser.Scene {
         this.board.setCurFrame(0);
         this.board.setPlayerLoc(0, 0);
 
+        this.tileWidth = game.config.width / tileDim.width;
+        this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / tileDim.height;
+
         this.SAVESIZE = this.board.getSaveSize();
         //console.log(this.SAVESIZE);
 
@@ -41,9 +44,12 @@ class Farm extends Phaser.Scene {
         this.cropSprites = {};
         for(let i = 0; i < this.board.width; i++) {
             for(let j = 0; j < this.board.height; j++) {
+                console.log("CropSprite");
                 this.addCropSprite(i, j);
             }
         }
+
+        new Crop(this, 0, 0, ["plantA-0"], 0);
     }
 
     create() {
@@ -227,8 +233,11 @@ class Farm extends Phaser.Scene {
     addCropSprite(u, v) {
         let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[0].growthFrames, 0);
         let plantScale = (this.tileWidth) / (newCrop.width * 2);
+        console.log(plantScale);
+        console.log(plantTypes[0]);
         newCrop.setScale(plantScale, plantScale);
         //newCrop.setVisible(false);
+        console.log(newCrop.x, newCrop.y);
         this.cropSprites[[u,v].toString()] = newCrop;
     }
 
@@ -297,9 +306,6 @@ class Farm extends Phaser.Scene {
         const redoState = localStorage.getItem(saveSlot+'Redo');
         
         if (savedState) {
-            this.tileWidth = game.config.width / this.board.width;
-            this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
-
             console.log("Found save, string length:" + savedState.length);
             
             // Draw the board for the saved game

@@ -6,7 +6,7 @@ class Crop extends Phaser.GameObjects.Sprite {
         this.scene = scene;
 
         scene.add.existing(this);
-
+        console.log(this);
         return this;
     }
 
