@@ -40,22 +40,31 @@ class Farm extends Phaser.Scene {
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0); //intializes plants in inventory
         }
+    }
+
+    create() {
+        //Create all the objects needed for this scene
+        this.drawBoard();
+
+        console.log("Initializing new player...");
+        my.player = new Player(this, 0, 0, "player", null);
+        let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
+        my.player.setScale(playerScale, playerScale);
+        this.movePlayerPos(my.player, 0, 0); // Set initial position
+        console.log('Player placed at default position');
+
+        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
         
         this.cropSprites = {};
         for(let i = 0; i < this.board.width; i++) {
             for(let j = 0; j < this.board.height; j++) {
-                console.log("CropSprite");
                 this.addCropSprite(i, j);
             }
         }
-
-        new Crop(this, 0, 0, ["plantA-0"], 0);
-    }
-
-    create() {
+    
         // Check if there is an auto-save
         const savedState = localStorage.getItem('autoSaveHistory');
-    
         if (savedState) {
             // Prompt the player to continue or start a new game
             const continueGame = confirm("Do you want to continue from where you left off?");
@@ -65,28 +74,11 @@ class Farm extends Phaser.Scene {
             } else {
                 localStorage.removeItem('autoSaveHistory'); // Clear the saved game if they start a new game
                 console.log("initializing new game...");
-                this.scene.restart();  // Restart the scene to initialize a new game
+                this.record();
+                //this.scene.restart();  // Restart the scene to initialize a new game
             }
         } else {
-            this.tileWidth = game.config.width / this.board.width;
-            this.tileHeight = (game.config.height - HEIGHT_UNUSED_FOR_TILES) / this.board.height;
-    
-            // Draw the board for the new game
-            this.drawBoard();
-            
-            // Ensure player is created only once for a new game
-            if (!my.player) {
-                console.log("Initializing new player...");
-                my.player = new Player(this, 0, 0, "player", null);
-                let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
-                my.player.setScale(playerScale, playerScale);
-                this.movePlayerPos(my.player, 0, 0); // Set initial position
-                console.log('Player placed at default position');
-            }
-            this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
-            this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
             this.record();
-    
         }
         
         // Inputs for movement and other actions
@@ -231,19 +223,19 @@ class Farm extends Phaser.Scene {
     }
 
     addCropSprite(u, v) {
-        let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[0].growthFrames, 0);
+        let newCrop = new Crop(this, u * this.tileWidth + this.tileWidth / 2, v * this.tileHeight + this.tileHeight * 3 / 4, plantTypes[1].growthFrames, 0);
         let plantScale = (this.tileWidth) / (newCrop.width * 2);
-        console.log(plantScale);
-        console.log(plantTypes[0]);
         newCrop.setScale(plantScale, plantScale);
-        //newCrop.setVisible(false);
-        console.log(newCrop.x, newCrop.y);
+        newCrop.setVisible(false);
         this.cropSprites[[u,v].toString()] = newCrop;
     }
 
     plantCropSprite(u, v, type, growth) {
+        console.log("planted");
         let cropSprite = this.cropSprites[[u,v].toString()]
         cropSprite.overrideType(plantTypes[type].growthFrames, growth);
+        let plantScale = (this.tileWidth) / (cropSprite.width * 2);
+        cropSprite.setScale(plantScale, plantScale);
         cropSprite.setVisible(true);
     }
     
@@ -307,9 +299,6 @@ class Farm extends Phaser.Scene {
         
         if (savedState) {
             console.log("Found save, string length:" + savedState.length);
-            
-            // Draw the board for the saved game
-            this.drawBoard();
 
             //Gets the amount of save states in the string
             let frames = savedState.length/this.SAVESIZE;
@@ -322,12 +311,12 @@ class Farm extends Phaser.Scene {
             }
     
 
-            // restore inventory display
-            this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
-            this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+            // // restore inventory display
+            // this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
+            // this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"0xFFFFFF"}).setOrigin(0);
 
             // Convert the most recent Base64-encoded board state back to an ArrayBuffer
-            console.log(`Loading frame ${this.history.length -1}...`);
+            //console.log(`Loading frame ${this.history.length -1}...`);
             const boardState = Board.base64ToArrayBuffer(this.history[this.history.length -1]);
             
             this.loadState(boardState);
@@ -353,14 +342,14 @@ class Farm extends Phaser.Scene {
     loadState(boardState){
         // Set the restored board state
         this.board.setBoard(boardState);
-        console.log("loading frame " + this.board.getCurFrame());
+        //console.log("loading frame " + this.board.getCurFrame());
 
         // Restore player position
         let playerPos = this.board.getPlayerLoc();
 
         // Ensure the player exists (if not created yet) before trying to move
         if (my.player == null) {
-            console.log("creating player");
+            //console.log("creating player");
             my.player = new Player(this, 0, 0, "player", null);
             let playerScale = (this.tileWidth - 3) / (my.player.height * 2);
             my.player.setScale(playerScale, playerScale);
@@ -396,18 +385,12 @@ class Farm extends Phaser.Scene {
     refreshCropSprite(u, v) {
         let curEntry = this.board.getEntry(u, v);
         let curSprite = this.cropSprites[[u,v].toString()];
-        let entryCrop = curEntry.getCrop()
-        //case 1: yes entry, no sprite: make new sprite
-        if(entryCrop != undefined && curSprite == null) {
-            this.plantCropSprite(u, v, curEntry.getCrop, curEntry.getGrowth);
-        }
-        //case 2: no entry, yes sprite: delete sprite
-        else if(entryCrop == undefined && curSprite != null) {
+        let entryCrop = curEntry.getCrop();
+        if(entryCrop == undefined) {
             curSprite.visible = false;
         }
-        //case 3: yes entry, yes sprite: update sprite info
-        else if(entryCrop != undefined && curSprite != null) {
-            curSprite.overrideType(plantTypes[curEntry.getCrop()].growthFrames, curEntry.getGrowth())
+        else {
+            this.plantCropSprite(u,v,curEntry.getCrop(),curEntry.getGrowth());
         }
     }
 
@@ -416,7 +399,7 @@ class Farm extends Phaser.Scene {
         // Gets a copy of the ArrayBuffer containing the entire game state
         const boardState = Board.arrayBufferToBase64(this.board.getBoard());
         this.history.push(boardState);
-        console.log("Length of history: " + this.history.length);
+        //console.log("Length of history: " + this.history.length);
         this.truehistory();
     }
 
@@ -428,7 +411,7 @@ class Farm extends Phaser.Scene {
                 this.redoStack.push(state);
             }
             
-            console.log("Length of history: " + this.history.length);
+            //console.log("Length of history: " + this.history.length);
             this.truehistory();
             
             this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));
@@ -448,7 +431,7 @@ class Farm extends Phaser.Scene {
                 this.history.push(state);
             }
             
-            console.log("Length of history: " + this.history.length);
+            //console.log("Length of history: " + this.history.length);
             this.truehistory();
             
             this.loadState(Board.base64ToArrayBuffer(this.history[this.history.length - 1]));

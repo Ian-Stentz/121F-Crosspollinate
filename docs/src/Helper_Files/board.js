@@ -88,7 +88,6 @@ class Board {
 
     getSaveSize() {
         let b64 = Board.arrayBufferToBase64(this.board);
-        console.log(b64);
         return b64.length;
     }
 
@@ -100,17 +99,13 @@ class Board {
         for (let i = 0; i < length; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
-        console.log("ABtb64: " + binary.length);
-        console.log("String length: " + window.btoa(binary).length);
         return window.btoa(binary); // Base64 encode the binary string
     }
 
     // Static helper function to convert Base64 back to ArrayBuffer
     static base64ToArrayBuffer(base64) {
-        console.log("b64: " + base64.length);
         const binaryString = window.atob(base64); // Base64 decode
         const length = binaryString.length;
-        console.log("b64tAB: " + length);
         const buffer = new ArrayBuffer(length);
         const view = new Uint8Array(buffer);
         for (let i = 0; i < length; i++) {
