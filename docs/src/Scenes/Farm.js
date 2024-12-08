@@ -8,6 +8,7 @@ class Farm extends Phaser.Scene {
     }
 
     init() {
+        console.log("initialized");
         //any initialization of global variables go here
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
