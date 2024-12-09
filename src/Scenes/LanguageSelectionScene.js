@@ -20,20 +20,29 @@ class LanguageSelectionScene extends Phaser.Scene {
         const spanishButton = this.add.text(config.width / 2, config.height / 1.6, 'Español', { fontSize: '25px' })
             .setOrigin(0.5)
             .setInteractive();
-        
-        const frenchButton = this.add.text(config.width / 2, config.height / 1.35, 'Français', { fontSize: '25px' })
-            .setOrigin(0.5)
+
+        // Right to left script
+        const arabicButton = this.add.text(config.width / 2, config.height / 1.35, 'العربية', { fontSize: '25px' })
+            .setOrigin(1, 0.5)
+            .setAlign('right')
             .setInteractive();
+
+        // Locographic script
+        const chineseButton = this.add.text(config.width / 2, config.height / 1.12, '中文', { fontSize: '25px' })
+            .setOrigin(0.5)
+            .setFontFamily('Noto Sans CJK');
 
         // Add event listeners to each button
         englishButton.on('pointerdown', () => this.selectLanguage('en'));
         spanishButton.on('pointerdown', () => this.selectLanguage('es'));
-        frenchButton.on('pointerdown', () => this.selectLanguage('fr'));
+        arabicButton.on('pointerdown', () => this.selectLanguage('ar'));
+        chineseButton.on('pointerdown', () => this.selectLanguage('zh'));
 
         // Style the buttons (optional)
         this.styleButton(englishButton);
         this.styleButton(spanishButton);
-        this.styleButton(frenchButton);
+        this.styleButton(arabicButton);
+        this.styleButton(chineseButton);
     }
 
     // Change the language and move to the menu scene

@@ -1,14 +1,30 @@
 {
     "en": {
         "title": "Farm Simulator",
-        "startgame": "Start Farming"
+        "startgame": "Start Farming",
+        "heldSeedText": "Held Seed: Plant {0}",
+        "harvestedText": "Harvested Total: {0}, {1}, {2}",
+        "continuePrompt": "Do you want to continue from where you left off?"
     },
     "es": {
         "title": "Simulador de Granja",
-        "startgame": "Comenzar a Cultivar"
+        "startgame": "Comenzar a Cultivar",
+        "heldSeedText": "Semilla Sostenida: Planta {0}",
+        "harvestedText": "Total Cosechado: {0}, {1}, {2}",
+        "continuePrompt": "¿Quieres continuar desde donde lo dejaste?"
     },
-    "fr": {
-        "title": "Simulateur de Ferme",
-        "startgame": "Commencer à Cultiver"
+    "ar": {
+        "title": "محاكي المزرعة",
+        "startgame": "ابدأ الزراعة",
+        "heldSeedText": "البذرة المحتفظ بها: النبات {0}",
+        "harvestedText": "الإجمالي المحصود: {0}, {1}, {2}",
+        "continuePrompt": "هل تريد الاستمرار من حيث توقفت؟"
+    },
+    "zh": {
+        "title": "农场模拟器",
+        "startgame": "开始耕作",
+        "heldSeedText": "持有种子：植物 {0}",
+        "harvestedText": "已收获总计：{0}, {1}, {2}",
+        "continuePrompt": "你想从上次停止的地方继续吗？"
     }
 }

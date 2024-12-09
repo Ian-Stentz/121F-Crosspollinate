@@ -35,10 +35,18 @@ class Menu extends Phaser.Scene {
         this.title = this.add.text(config.width / 2, config.height / 4, titleText, { fontSize: '35px' }).setOrigin(0.5);
         let underline = this.add.rectangle(config.width / 2, (1.15 * config.height) / 4, this.title.width, 10, 0xFFFFFF, 0.5);
 
-
         this.startgame = this.add.text(config.width / 2, 3 * config.height / 5, startGameText, { fontSize: '18px' }).setOrigin(0.5);
         this.startgame.setInteractive();
 
+        // Handle RTL languages (like Arabic)
+        if (language === 'ar') {
+            this.startgame.setAlign('right').setOrigin(1, 0.5);  // Right-align for Arabic
+            this.title.setAlign('right').setOrigin(1, 0.5);
+        } else if (language === 'zh') {
+            // Adjust font for Chinese logographic script if necessary
+            this.title.setFontFamily('Noto Sans CJK');  // Example font for Chinese
+            this.startgame.setFontFamily('Noto Sans CJK');
+        }
 
         const self = this;
         this.input.on('gameobjectdown', function () {
