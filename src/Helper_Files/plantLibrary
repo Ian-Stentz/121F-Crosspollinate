@@ -1,0 +1,18 @@
+function examplePlant(DSL, sprites){
+    DSL.ID(0); //Mandatory. Must be an int >= 0 with no repeats. Plants must be defined in ascending order of ID;
+    DSL.Name("Plant"); //Mandatory. No repeats.
+    
+    DSL.Stages(4); //Heavily advised. Defaults to 4. Stages are indexed at 0 so the last stage is stage-1
+    if(sprites){
+        DSL.Sprites(sprites); //Mandatory, but can be alternatively passed via argument
+    }else{
+        DSL.Sprites({stage: 0, sprite: "sprite1"}, {stage: 2, sprite: "sprite2"}, {stage: 3, sprite: "sprite3"}); //an array of objects of format {stage: int, sprite: string}.
+    }    
+
+    DSL.SunNeeded(8);
+    DSL.WaterNeeded(20);
+    DSL.WaterConsumed(10);
+
+    DSL.Adjacencies([{crop: "Bonus1", bonus: 1.1}, {crop: "Bonus2", bonus: 1.4}, {crop: "Penalty1", bonus: 0.7}]); //Optional. Sets bonuses or penalties to growth requirements according to adjacent crops
+    DSL.Parents(["Parent1", "Parent2"]); //Optional. Defines parents required for crossbreeding. Empty means the crop will be a starter crop. Should never be more than 4.
+}
