@@ -26,10 +26,13 @@ class Menu extends Phaser.Scene {
 
 
     create() {
+
+        // Get current language from registry
+        const language = this.registry.get('language') || 'en';
+        
         // Retrieve translated strings
         const titleText = this.getTranslation('title');
         const startGameText = this.getTranslation('startgame');
-
 
         // Create world objects with translated text
         this.title = this.add.text(config.width / 2, config.height / 4, titleText, { fontSize: '35px' }).setOrigin(0.5);
