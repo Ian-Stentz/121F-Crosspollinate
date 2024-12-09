@@ -1,0 +1,21 @@
+{
+    "name": "Crosspollinate for Mobile",
+    "short_name": "Crosspollinate",
+    "description": "F3 For CMPM121",
+    "icons" : [
+        {
+            "src": "./assets/plantC-2.png",
+            "sizes": "200x200",
+            "type" : "image/png"
+        },
+        {
+            "src": "./assets/plantA-3.png",
+            "sizes": "16x16",
+            "type" : "image/png"
+        }
+    ],
+    "start_url": "./index.html",
+    "display": "fullscreen",
+    "theme_color": "#ffffff",
+    "background_color": "#118c13"
+}
