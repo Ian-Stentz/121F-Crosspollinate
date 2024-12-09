@@ -1,5 +1,8 @@
 // debug with extreme prejudice
 "use strict"
+if("serviceWorker" in navigator) {
+    navigator.serviceWorker,register("./sw.js");
+}
 
 // game config
 let config = {

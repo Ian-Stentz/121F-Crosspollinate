@@ -96,7 +96,9 @@ No major changes.
 ### Localization
 
 ### Mobile Installation
+To make the mobile app play offline, we simply followed the tutorial at https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable & https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Installable_PWAs that was listed in the F3 requirement. All we had to do was add the webmanifest and include it in the HTML, and then it's available to add to home screen from the webpage with an icon.
 
 ### Mobile Play (Offline)
+
 
 ## Reflection
