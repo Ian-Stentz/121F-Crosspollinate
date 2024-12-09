@@ -92,8 +92,10 @@ We incidentally already did this, at the end of F1. We moved the visual interfac
 No major changes.
 
 ### Internationalization
+Our game was internationalized using localization.json which contains the string translations that will be shown to the player. When starting the game players can select their language in LanguageSelectionScene and their choice is saved to phasers registry so it can be accessed by the other scenes. To add a message, just edit the json file. To add a new language, we add a new key and it translated strings to localization.json, then add a button to the LanguageSelectionScene so players can select it. Farm.js can then get the current language from the registry and parses the json file to apply the translated strings where they are needed, like in the inventory display and in the prompts.
 
 ### Localization
+Our game supports english, spanish, arabic (Right-to-left), and chinese (locographic). Since we did not know arabic or chinese we used Google Translate to translate the strings. To properly handle arabic and chinese in Farm.js, we used a helper function to adjust the alignment of arabic text and changed the font family of the chinese text. Players can select their language at the start of play on a dedicated language selection scene and their language is applied from then on.
 
 ### Mobile Installation
 To make the mobile app play offline, we simply followed the tutorial at https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable & https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Installable_PWAs that was listed in the F3 requirement. All we had to do was add the webmanifest and include it in the HTML, and then it's available to add to home screen from the webpage with an icon.
@@ -102,4 +104,4 @@ To make the mobile app play offline, we simply followed the tutorial at https://
 https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Offline_Service_workers https://github.com/madskristensen/WebEssentials.AspNetCore.ServiceWorker/issues/66 https://stackoverflow.com/questions/49157622/service-worker-typeerror-when-opening-chrome-extension were used to help. We used the Service Workers, as instructed by the PWA tutorial. We did need to use some additional resources to get the sw.js working, but once it was fully understood, it was rather straightforward.
 
 ## Reflection
-Due to the disconnect of this assignment from the game itself, and how late it is in the project no real rethinks have been made to the plans since F2.
+Throughout the project we chose a minimal design to focus on meeting the requirements, meaning we did not have a lot of textual feedback. This made internationalization and localization easier to implement because there wasn't a lot to changes to be made or many strings to translate. We also made use of many resources to accomplish these requirements. Due to the disconnect of this assignment from the game itself, and how late it is in the project no real rethinks have been made to the plans or design since F2.
