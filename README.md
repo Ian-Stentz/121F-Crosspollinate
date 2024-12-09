@@ -99,6 +99,7 @@ No major changes.
 To make the mobile app play offline, we simply followed the tutorial at https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable & https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Installable_PWAs that was listed in the F3 requirement. All we had to do was add the webmanifest and include it in the HTML, and then it's available to add to home screen from the webpage with an icon.
 
 ### Mobile Play (Offline)
-https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Offline_Service_workers https://github.com/madskristensen/WebEssentials.AspNetCore.ServiceWorker/issues/66 https://stackoverflow.com/questions/49157622/service-worker-typeerror-when-opening-chrome-extension were used to help
+https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Offline_Service_workers https://github.com/madskristensen/WebEssentials.AspNetCore.ServiceWorker/issues/66 https://stackoverflow.com/questions/49157622/service-worker-typeerror-when-opening-chrome-extension were used to help. We used the Service Workers, as instructed by the PWA tutorial. We did need to use some additional resources to get the sw.js working, but once it was fully understood, it was rather straightforward.
 
 ## Reflection
+Due to the disconnect of this assignment from the game itself, and how late it is in the project no real rethinks have been made to the plans since F2.
