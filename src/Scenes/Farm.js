@@ -7,7 +7,8 @@ class Farm extends Phaser.Scene {
     }
 
     preload() {
-        //any loading not done in Load.js goes here
+        // Load localization file
+        this.load.json('localization', 'assets/localization.json');
     }
 
     init() {
@@ -69,9 +70,31 @@ class Farm extends Phaser.Scene {
 
         this.createPlayer();
 
-        //TODO: Internationalize
-        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"#FEE"}).setOrigin(0);
-        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 'Harvested Total: 0, 0, 0 ', {fontSize: '20px', color:"#EFE"}).setOrigin(0);
+        // Internationalize
+        // Dynamically get the current language from the registry
+        const language = this.registry.get('language') || 'en';
+        const translations = this.cache.json.get('localization')[language];
+
+        // Use translated texts
+        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 
+            translations.heldSeedText.replace("{0}", this.currentSeed + 1), 
+            { fontSize: '20px', color: "#FEE" }).setOrigin(0);
+        
+        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES / 2, 
+            translations.harvestedText.replace("{0}", 0).replace("{1}", 0).replace("{2}", 0),
+            { fontSize: '20px', color: "#EFE" }).setOrigin(0);
+
+        // Handle RTL languages (like Arabic)
+        if (language === 'ar') {
+            this.heldseed.setAlign('right');  // Right-align for Arabic
+            this.heldseed.setOrigin(1, 0.5);  // Right-align the text on the screen
+            this.harvested.setAlign('right');
+            this.harvested.setOrigin(1, 0.5);
+        } else if (language === 'zh') {
+            // Adjust font for Chinese logographic script if necessary
+            this.heldseed.setFontFamily('Noto Sans CJK');  // Example font for Chinese
+            this.harvested.setFontFamily('Noto Sans CJK');
+        }
         
         this.initCropSprites();
 
@@ -82,8 +105,8 @@ class Farm extends Phaser.Scene {
         const savedState = localStorage.getItem(AUTO_SAVE_SLOT_NAME + UNDO_APPEND);
         if (savedState) {
             // Prompt the player to continue or start a new game
-            //TODO: Internationalize
-            const continueGame = confirm("Do you want to continue from where you left off?");
+            // Internationalize
+            const continueGame = confirm(translations.continuePrompt);
             if (continueGame) {
                 console.log("reloading past game...");
                 this.loadGame(AUTO_SAVE_SLOT_NAME);
@@ -310,11 +333,29 @@ class Farm extends Phaser.Scene {
         this.eventEmitter.emit("updateCell" + x + y);
     }
 
-    //TODO : internationalize
+    // Utility function to adjust text alignment based on language
+    adjustTextAlignment(textObject, languageCode) {
+        if (languageCode === 'ar') {  // Arabic language code
+            textObject.setOrigin(1, 0.5); // Right-aligned (for RTL)
+            textObject.setAlign('right'); // Align text to the right side
+        } else { 
+            textObject.setOrigin(0, 0.5); // Left-aligned (for LTR languages)
+            textObject.setAlign('left');  // Align text to the left side
+        }
+    }
+
+
+    // Internationalize the HUD
     hudUpdate(){
-        this.heldseed.text = 'Held Seed: ' + this.PlantTypes[this.currentSeed].plantName; (this.currentSeed + 1);
-        let harvestText = "Harvested Total: " + this.board.getPlant("0") + ", " + this.board.getPlant("1") + ", " + this.board.getPlant("2");  // can also call e.g. this.board.getPlant("wheat")
-        this.harvested.text = harvestText;
+        // Dynamically get the current language from the registry
+        const language = this.registry.get('language') || 'en';
+        const translations = this.cache.json.get('localization')[language];
+
+        this.heldseed.text = translations.heldSeedText.replace("{0}", this.currentSeed + 1);
+        this.harvested.text = translations.harvestedText.replace("{0}", this.board.getPlant("0")).replace("{1}", this.board.getPlant("1")).replace("{2}", this.board.getPlant("2"));
+
+        this.adjustTextAlignment(this.heldseed.text, language);
+        this.adjustTextAlignment(this.harvested.text, language);
     }
 
     changeSeed(dir){
@@ -399,7 +440,12 @@ class Farm extends Phaser.Scene {
                 stroke: '#8ff',
                 strokeThickness: 4
             }
-            this.add.text(game.config.width / 2, game.config.height / 2, "You Win!", fontSettings).setOrigin(0.5);
+            // Dynamically get the current language from the registry
+            const language = this.registry.get('language') || 'en';
+            const translations = this.cache.json.get('localization')[language];
+
+            // Set winning text
+            this.add.text(game.config.width / 2, game.config.height / 2, translations.winText, fontSettings).setOrigin(0.5);
         }
     }
 
@@ -589,18 +635,24 @@ class Farm extends Phaser.Scene {
         }
     }
 
-    //TODO : prompts internationalized
+    // Prompts Internationalized
     savePrompt() {
+        // Dynamically get the current language from the registry
+        const language = this.registry.get('language') || 'en';
+        const translations = this.cache.json.get('localization')[language];
+
         console.log("SAVEPROMPT");
-        let slot = prompt("Which file would you like to save to? (1-6):", 1)
+
+        let slot = prompt(translations.saveSlotPrompt, 1)
+
         //I call upon thee, dark magic of the regex
         const promptRe = /^[1-6]{1}$/;
         slot = promptRe.exec(slot);
         if(slot != null) {
             this.saveGame(slot);
-            confirm("Save Successful");
+            confirm(translations.saveConfirm);
         } else {
-            let choice = confirm("Invalid Slot, would you like to try again?");
+            let choice = confirm(translations.invalidSlot);
             if(choice) {
                 this.savePrompt();
             }
@@ -608,17 +660,24 @@ class Farm extends Phaser.Scene {
     }
 
     loadPrompt() {
+
+        // Dynamically get the current language from the registry
+        const language = this.registry.get('language') || 'en';
+        const translations = this.cache.json.get('localization')[language];
+
         console.log("LOADPROMPT");
-        let slot = prompt("Which file would you like to load from? (1-6):", 1)
+
+        let slot = prompt(translations.loadSlotPrompt, 1)
+
         //I call upon thee, dark magic of the regex
         const promptRe = /^[1-6]{1}$/;
         slot = promptRe.exec(slot);
         if(slot != null) {
             if(!this.loadGame(slot)) {
-                confirm("No data found in slot " + slot);
+                confirm(translations.noData.replace("{0}", slot));
             }
         } else {
-            let choice = confirm("Invalid Slot, would you like to try again?");
+            let choice = confirm(translations.invalidSlot);
             if(choice) {
                 this.loadPrompt();
             }
@@ -626,18 +685,25 @@ class Farm extends Phaser.Scene {
     }
 
     deletePrompt() {
+
+        // Dynamically get the current language from the registry
+        const language = this.registry.get('language') || 'en';
+        const translations = this.cache.json.get('localization')[language];
+
         console.log("DELETEPROMPT");
-        let slot = prompt("Which file would you like to delete? (1-6):", 1)
+
+        let slot = prompt(translations.deleteSlotPrompt, 1)
+
         //I call upon thee, dark magic of the regex
         const promptRe = /^[1-6]{1}$/;
         slot = promptRe.exec(slot);
         if(slot != null) {
-            let choice = confirm("Are you sure you want to remove slot " + slot + "?")
+            let choice = confirm(translations.deleteConfirm.replace("{0}", slot))
             if(choice) {
                 this.removeSlot(slot);
             }
         } else {
-            let choice = confirm("Invalid Slot, would you like to try again?");
+            let choice = confirm(translations.invalidSlot);
             if(choice) {
                 this.deletePrompt();
             }
@@ -661,8 +727,12 @@ class Farm extends Phaser.Scene {
     }
 
     promptScenario() {
-        //TODO : Internationalize
-        let promptstring = "Select a scenario: "
+        // Dynamically get the current language from the registry
+        const language = this.registry.get('language') || 'en';
+        const translations = this.cache.json.get('localization')[language];
+
+        let promptstring = translations.scenarioPrompt;
+
         const scenarios = this.cache.json.get("ExternalConditions")
         for(const scenarioName in scenarios) {
             promptstring += scenarioName + ", "
