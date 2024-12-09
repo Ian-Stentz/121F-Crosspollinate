@@ -14,7 +14,7 @@ let config = {
     width: 600,
     height: 650,
     backgroundColor: `#104000`,
-    scene: [Load, Farm, Menu]
+    scene: [Load, LanguageSelectionScene, Farm, Menu]
 }
 
 const game = new Phaser.Game(config);

@@ -62,7 +62,7 @@ class Load extends Phaser.Scene {
 
         //go to the farm scene
        //this.scene.start("farmScene");
-       this.scene.start("menuScene");
+       this.scene.start("languageSelectionScene");
     }
 
     //Load should never get to update
