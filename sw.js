@@ -5,6 +5,8 @@ const appShellFiles = [
     "/index.html",
     "/src/main.js",
     "/lib/phaser.js",
+    "/Crosspollinate.webmanifest",
+    "/assets/localization.json",
     "/src/DSL/ExternalConditions.json",
     "/src/Helper_files/board.js",
     "/src/Helper_files/funcLibrary.js",
@@ -13,9 +15,9 @@ const appShellFiles = [
     "/src/Scenes/Farm.js",
     "/src/Scenes/Load.js",
     "/src/Scenes/Menu.js",
+    "/src/Scenes/LanguageSelectionScene.js",
     "/src/Sprites/Crop.js",
     "/src/Sprites/Player.js",
-    "/Crosspollinate.webmanifest",
     "/assets/plantA-0.png",
     "/assets/plantA-1.png",
     "/assets/plantA-2.png",
@@ -48,9 +50,11 @@ self.addEventListener("fetch", (e) => {
                 return r;
             }
             const response = await fetch(e.request);
-            const cache = await caches.open(cacheName);
-            console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
-            cache.put(e.request, response.clone());
+            caches.open(cacheName).then(function (cache) {
+                if (!/^https?:$/i.test(new URL(e.request.url).protocol)) return;
+                console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
+                cache.put(e.request, response.clone());
+            })
             return response;
         })(),
     );
