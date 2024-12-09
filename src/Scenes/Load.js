@@ -19,6 +19,10 @@ class Load extends Phaser.Scene {
         this.load.image("plantC-0", "plantC-0.png");
         this.load.image("plantC-1", "plantC-1.png");
         this.load.image("plantC-2", "plantC-2.png");
+        this.load.image("Carrot-0", "Carrot-0.png");
+        this.load.image("Carrot-1", "Carrot-1.png");
+        this.load.image("Carrot-2", "Carrot-2.png");
+        this.load.image("Carrot-3", "Carrot-3.png");
         this.load.setPath("./src/")
         this.load.json("ExternalConditions", "DSL/ExternalConditions.json");
     }
@@ -30,6 +34,7 @@ class Load extends Phaser.Scene {
         my.crops.plantB = ["plantA-0", "plantA-1", "plantA-2", "plantA-3"];
         my.crops.plantC = ["plantB-0", "plantB-1", "plantB-2", "plantB-3"];
         my.crops.plantD = ["plantC-0", "plantC-1", "plantC-2"];
+        my.crops.carrot = ["Carrot-0", "Carrot-1", "Carrot-2", "Carrot-3"];
 
         // Testing if this can automate (ish) crop sprites
         // this.anims.create({
@@ -94,14 +99,14 @@ class Load extends Phaser.Scene {
                     DSL.Sprites([{stage: 0, sprite: my.crops.plantB[0]}, {stage: 1, sprite: my.crops.plantB[1]}, {stage: 3, sprite: my.crops.plantB[2]}, {stage: 4, sprite: my.crops.plantB[3]}]);
                 }    
             
-                DSL.SunNeeded(9);
-                DSL.WaterNeeded(20);
-                DSL.WaterConsumed(10);
+                DSL.SunNeeded(10);
+                DSL.WaterNeeded(15);
+                DSL.WaterConsumed(7);
             
                 DSL.Adjacencies([{crop: "Wheat", bonus: .95}, {crop: "Carrot", bonus: 1.2}, {crop: "Barley", bonus: 1.1}, {crop: "Corn", bonus: 1.3},]); 
             },
             function Brambleberry(DSL, sprites){
-                DSL.ID(1);
+                DSL.ID(2);
                 DSL.Name("Brambleberry"); 
                 
                 DSL.Stages(4); 
@@ -111,13 +116,31 @@ class Load extends Phaser.Scene {
                     DSL.Sprites([{stage: 0, sprite: my.crops.plantD[0]}, {stage: 1, sprite: my.crops.plantD[1]}, {stage: 3, sprite: my.crops.plantD[2]}]);
                 }    
             
-                DSL.SunNeeded(6);
-                DSL.WaterNeeded(30);
+                DSL.SunNeeded(8);
+                DSL.WaterNeeded(25);
                 DSL.WaterConsumed(15);
             
                 DSL.Adjacencies([{crop: "Wheat", bonus: .9}, {crop: "Gilderberry", bonus: 1.2}, {crop: "Carrot", bonus: 1.1}, {crop: "Brambleberry", bonus: .9}]); 
             },
+            function Carrot(DSL, sprites){
+                DSL.ID(3);
+                DSL.Name("Carrot"); 
+                
+                DSL.Stages(4); 
+                if(sprites){
+                    DSL.Sprites(sprites);
+                }else{
+                    DSL.Sprites([{stage: 0, sprite: my.crops.carrot[0]}, {stage: 1, sprite: my.crops.carrot[1]}, {stage: 2, sprite: my.crops.carrot[2]}, {stage: 3, sprite: my.crops.carrot[3]}]);
+                }    
             
+                DSL.SunNeeded(6);
+                DSL.WaterNeeded(30);
+                DSL.WaterConsumed(20);
+            
+                DSL.Adjacencies([{crop: "Wheat", bonus: 1.1}, {crop: "Gilderberry", bonus: 1.1}, {crop: "Brambleberry", bonus: 1.1}, {crop: "Barley", bonus: 1.2}, {crop: "Pond", bonus: 1.2}]); 
+            },
+            
+
         ]
        this.scene.start("languageSelectionScene");
     }

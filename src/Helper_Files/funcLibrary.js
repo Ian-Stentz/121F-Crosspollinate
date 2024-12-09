@@ -24,12 +24,16 @@ function cellDistOctal(c1, c2){
 //TODO : Replace below
 function cropToNumber(cropName) {
     switch (cropName) {
-        case "wheat":
+        case "pond":
             return 0;
-        case "brambleberry":
+        case "wheat":
             return 1;
-        case "gilderberry":
+        case "brambleberry":
             return 2;
+        case "carrot":
+            return 3;
+        case "gilderberry":
+            return 4;
         default:
             return -1;
     }
@@ -38,10 +42,14 @@ function cropToNumber(cropName) {
 function numberToCrop(number) {
     switch(number) {
         case 0:
-            return "wheat";
+            return "pond";
         case 1:
-            return "brambleberry";
+            return "wheat";
         case 2:
+            return "brambleberry";
+        case 3:
+            return "carrot";
+        case 4:
             return "gilderberry";
         default:
             return "";

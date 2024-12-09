@@ -1,6 +1,6 @@
 [tutorial]
 start_moisture = 5
-seeds_in_play = ["brambleberry","wheat","gilderberry"]
+seeds_in_play = ["pond", "wheat", "carrot"]
 win_conditions = [["brambleberry","harvest",1],["wheat","harvest",1],["gilderberry","harvest",1]]
 weather_conditions = [["sunny"]]
 
@@ -11,7 +11,7 @@ win_conditions = [["wheat","harvest",10]]
 
 [hybridization]
 start_moisture = 10
-seeds_in_play = ["brambleberry","wheat","gilderberry"]
+seeds_in_play = ["pond", "wheat", "brambleberry", "carrot"]
 win_conditions = [
     ["brambleberry","harvest",1],
     ["wheat","harvest",1],
@@ -21,7 +21,7 @@ weather_conditions = [["sunny"]]
 
 [foul_weather]
 start_moisture = 0
-seeds_in_play = ["brambleberry","wheat","gilderberry"]
+seeds_in_play = ["pond", "wheat", "brambleberry", "carrot"]
 win_conditions = [
     ["brambleberry","harvest",1],
     ["wheat","harvest",1],

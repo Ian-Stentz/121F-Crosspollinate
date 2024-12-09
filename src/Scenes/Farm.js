@@ -317,7 +317,9 @@ class Farm extends Phaser.Scene {
 
                 //Growth Simulation
                 if(curEntry.getCrop() != undefined){
-                    const cost = this.PlantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth(), ["fallow"])
+                    const adjacent = this.adjacent(i,j, false);
+                    console.log(adjacent);
+                    const cost = this.PlantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth(), adjacent);
                     if(cost > -1){
                         curEntry.setMoisture(curEntry.getMoisture() - cost);
                         curEntry.setGrowth(curEntry.getGrowth() + 1);
@@ -331,6 +333,27 @@ class Farm extends Phaser.Scene {
 
     textUpdate(x, y) {
         this.eventEmitter.emit("updateCell" + x + y);
+    }
+
+    adjacent(u, v, mature){
+        const adj = []
+        for (let i = 0; i < this.board.width; i++) {
+            for (let j = 0; j < this.board.height; j++) {
+                if(cellDistManhattan([u,v], [i,j]) == 1){
+                    let curEntry = this.board.getEntry(i, j);
+                    if(curEntry.getCrop() == undefined){
+                        adj.push("fallow");
+                    }
+                    else if(mature && curEntry.getGrowth() < this.PlantTypes[(curEntry.getCrop())].getLastStage()){
+                        adj.push("fallow");
+                    }
+                    else{
+                        adj.push(this.PlantTypes[(curEntry.getCrop())].plantName);
+                    }
+                }
+            }
+        }
+        return(adj);
     }
 
     // Utility function to adjust text alignment based on language
