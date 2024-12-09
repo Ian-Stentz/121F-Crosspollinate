@@ -1,4 +1,4 @@
-const cacheName = "Crosspollinate-v0.05";
+const cacheName = "Crosspollinate-v0.06";
 
 const appShellFiles = [
     "./",

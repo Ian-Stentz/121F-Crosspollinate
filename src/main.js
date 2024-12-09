@@ -1,10 +1,8 @@
 // debug with extreme prejudice
 "use strict"
-// if("serviceWorker" in navigator) {
-//     navigator.serviceWorker.register("./sw.js");
-// }
-
-const buttonShelf = document.querySelector<HTMLDivElement>("#button-shelf");
+if("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+}
 
 // game config
 let config = {
@@ -44,3 +42,5 @@ const STATE_SIZE = FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_
 const AUTO_SAVE_SLOT_NAME = 'autoSave';
 const UNDO_APPEND = 'History';
 const REDO_APPEND = 'Redo';
+
+let buttonShelf;

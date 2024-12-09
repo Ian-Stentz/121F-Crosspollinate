@@ -59,6 +59,8 @@ class Farm extends Phaser.Scene {
     }
 
     create() {
+        buttonShelf = document.querySelector("#shelf");
+        console.log("BUTTON SHELF: " + buttonShelf);
         console.log("logging plant types");
         console.log(this.PlantTypes);
         console.log(this.seedsInPlay);
@@ -133,9 +135,9 @@ class Farm extends Phaser.Scene {
         createButton("⏩", () => { this.changeSeed(1);})
         createButton("↩️", () => { if (!this.gameFrozen) { this.undo() } });
         createButton("↪️", () => { if (!this.gameFrozen) { this.redo() } });
-        createButton("💾", this.savePrompt);
-        createButton("🔄", this.loadPrompt);
-        createButton("🚮", this.deletePrompt);
+        createButton("💾", () => { this.savePrompt() });
+        createButton("🔄", () => { this.loadPrompt() });
+        createButton("🚮", () => { this.deletePrompt() });
         
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
     }
