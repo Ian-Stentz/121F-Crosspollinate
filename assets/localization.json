@@ -1,0 +1,14 @@
+{
+    "en": {
+        "title": "Farm Simulator",
+        "startgame": "Start Farming"
+    },
+    "es": {
+        "title": "Simulador de Granja",
+        "startgame": "Comenzar a Cultivar"
+    },
+    "fr": {
+        "title": "Simulateur de Ferme",
+        "startgame": "Commencer à Cultiver"
+    }
+}
