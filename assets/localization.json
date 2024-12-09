@@ -4,27 +4,64 @@
         "startgame": "Start Farming",
         "heldSeedText": "Held Seed: Plant {0}",
         "harvestedText": "Harvested Total: {0}, {1}, {2}",
-        "continuePrompt": "Do you want to continue from where you left off?"
+        "continuePrompt": "Do you want to continue from where you left off?",
+        "saveSlotPrompt": "Which file would you like to save to? (1-6)",
+        "saveConfirm": "Save Successful",
+        "invalidSlot": "Invalid Slot, would you like to try again?",
+        "loadSlotPrompt": "Which file would you like to load from? (1-6)",
+        "noData": "No data found in slot {0}",
+        "deleteSlotPrompt": "Which file would you like to delete? (1-6)",
+        "deleteConfirm": "Are you sure you want to remove slot {0}?",
+        "scenarioPrompt": "Select a scenario: ",
+        "winText": "You win!"
     },
     "es": {
         "title": "Simulador de Granja",
         "startgame": "Comenzar a Cultivar",
         "heldSeedText": "Semilla Sostenida: Planta {0}",
         "harvestedText": "Total Cosechado: {0}, {1}, {2}",
-        "continuePrompt": "¿Quieres continuar desde donde lo dejaste?"
+        "continuePrompt": "¿Quieres continuar desde donde lo dejaste?",
+        "saveSlotPrompt": "¿En qué archivo te gustaría guardar? (1-6)",
+        "saveConfirm": "Guardado exitoso",
+        "invalidSlot": "Ranura inválida, ¿quieres intentar de nuevo?",
+        "loadSlotPrompt": "¿De qué archivo te gustaría cargar? (1-6)",
+        "noData": "No se encontraron datos en la ranura {0}",
+        "deleteSlotPrompt": "¿Qué archivo te gustaría eliminar? (1-6)",
+        "deleteConfirm": "¿Estás seguro de que quieres eliminar la ranura {0}?",
+        "scenarioPrompt": "Selecciona un escenario: ",
+        "winText": "¡Ganaste!"
     },
     "ar": {
         "title": "محاكي المزرعة",
         "startgame": "ابدأ الزراعة",
         "heldSeedText": "البذرة المحتفظ بها: النبات {0}",
         "harvestedText": "الإجمالي المحصود: {0}, {1}, {2}",
-        "continuePrompt": "هل تريد الاستمرار من حيث توقفت؟"
+        "continuePrompt": "هل تريد الاستمرار من حيث توقفت؟",
+        "saveSlotPrompt": "إلى أي ملف ترغب في الحفظ؟ (1-6)",
+        "saveConfirm": "تم الحفظ بنجاح",
+        "invalidSlot": "فتحة غير صالحة، هل ترغب في المحاولة مرة أخرى؟",
+        "loadSlotPrompt": "من أي ملف ترغب في التحميل؟ (1-6)",
+        "noData": "لم يتم العثور على بيانات في الفتحة {0}",
+        "deleteSlotPrompt": "أي ملف ترغب في حذفه؟ (1-6)",
+        "deleteConfirm": "هل أنت متأكد أنك تريد إزالة الفتحة {0}؟",
+        "scenarioPrompt": "اختر سيناريو: ",
+        "winText": "لقد فزت!"
+
     },
     "zh": {
         "title": "农场模拟器",
         "startgame": "开始耕作",
         "heldSeedText": "持有种子：植物 {0}",
         "harvestedText": "已收获总计：{0}, {1}, {2}",
-        "continuePrompt": "你想从上次停止的地方继续吗？"
+        "continuePrompt": "你想从上次停止的地方继续吗？",
+        "saveSlotPrompt": "您想保存到哪个文件？(1-6)",
+        "saveConfirm": "保存成功",
+        "invalidSlot": "无效的槽位，您想再试一次吗？",
+        "loadSlotPrompt": "您想从哪个文件加载？(1-6)",
+        "noData": "在槽位 {0} 中未找到数据",
+        "deleteSlotPrompt": "您想删除哪个文件？(1-6)",
+        "deleteConfirm": "您确定要删除槽位 {0} 吗？",
+        "scenarioPrompt": "选择一个场景：",
+        "winText": "你赢了！"
     }
 }
