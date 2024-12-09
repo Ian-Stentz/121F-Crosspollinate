@@ -154,8 +154,8 @@ class Farm extends Phaser.Scene {
         createButton("⬅️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [-1, 0]) } });
         createButton("⬇️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } });
         createButton("➡️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } });
-        createButton("⏪", () => { this.changeSeed(-1);});
-        createButton("⏩", () => { this.changeSeed(1);})
+        createButton("⏪", () => { this.changeSeed(1);});
+        createButton("⏩", () => { this.changeSeed(-1);})
         createButton("↩️", () => { if (!this.gameFrozen) { this.undo() } });
         createButton("↪️", () => { if (!this.gameFrozen) { this.redo() } });
         createButton("💾", () => { this.savePrompt() });
@@ -354,8 +354,8 @@ class Farm extends Phaser.Scene {
         this.heldseed.text = translations.heldSeedText.replace("{0}", this.currentSeed + 1);
         this.harvested.text = translations.harvestedText.replace("{0}", this.board.getPlant("0")).replace("{1}", this.board.getPlant("1")).replace("{2}", this.board.getPlant("2"));
 
-        this.adjustTextAlignment(this.heldseed.text, language);
-        this.adjustTextAlignment(this.harvested.text, language);
+        this.adjustTextAlignment(this.heldseed, language);
+        this.adjustTextAlignment(this.harvested, language);
     }
 
     changeSeed(dir){
