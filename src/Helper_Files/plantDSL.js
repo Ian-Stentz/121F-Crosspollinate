@@ -67,9 +67,9 @@ class PlantType{
     getCoeff(adjacent){ 
         let c = 1;
 
-        for(let i = 0; i < adjacencies.length; i++){
+        for(let i = 0; i < this.adjacencies.length; i++){
             for(let j = 0; j < adjacent.length; j++){
-                if(this.adjacencies[i].crop == this.adjacent[j]){
+                if(this.adjacencies[i].crop == adjacent[j]){
                     c /= this.adjacencies[i].bonus;
                 }
             }
@@ -81,12 +81,17 @@ class PlantType{
         let outSprite = "";
 
         for(let s in this.sprites){
-            if(stage >= s.stage){
-                outSprite = s.sprite;
+            if(stage >= this.sprites[s].stage){
+
+                outSprite = this.sprites[s].sprite;
             }
         }
 
         return(outSprite);
+    }
+    
+    getLastStage(){
+        return(this.stages-1);
     }
 
 }
@@ -103,6 +108,9 @@ function plantCompiler(plantProgram, sprites){
         },
         Stages: function(stages){
             newPlant.stages = stages;
+        },
+        Sprites: function(sprites){
+            newPlant.sprites = sprites;
         },
         SunNeeded: function(sun){
             newPlant.sunReq = sun;

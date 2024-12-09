@@ -47,3 +47,10 @@ function numberToCrop(number) {
             return "";
     }
 }
+
+function createButton(icon, callback) {
+    const button = document.createElement("button");
+    button.addEventListener("click", callback);
+    button.innerHTML = icon;
+    buttonShelf.append(button);
+}

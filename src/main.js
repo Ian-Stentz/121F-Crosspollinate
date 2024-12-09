@@ -1,8 +1,10 @@
 // debug with extreme prejudice
 "use strict"
-if("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
-}
+// if("serviceWorker" in navigator) {
+//     navigator.serviceWorker.register("./sw.js");
+// }
+
+const buttonShelf = document.querySelector<HTMLDivElement>("#button-shelf");
 
 // game config
 let config = {
@@ -36,7 +38,7 @@ const CROP_BYTES = 1;
 const GROWTH_BYTES = 1;
 const ENTRY_BYTES = SUN_BYTES + MOIST_BYTES + CROP_BYTES + GROWTH_BYTES;
 const INVENTORY_ENTRY_BYTES = 2;
-const PLANT_TYPES = 3;
+const PLANT_TYPES = 6;
 const STATE_SIZE = FRAME_BYTES + COORD_BYTES + this.width * this.height * ENTRY_BYTES + INVENTORY_ENTRY_BYTES * PLANT_TYPES;
 
 const AUTO_SAVE_SLOT_NAME = 'autoSave';

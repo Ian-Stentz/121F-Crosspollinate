@@ -15,11 +15,21 @@ class Farm extends Phaser.Scene {
         //any initialization of global variables go here
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
-        let wheat = new plantType(7, 25, 15, my.crops.plantA);
-        let brambleberry = new plantType(10, 20, 10, my.crops.plantB);
-        let gilderberry = new plantType(4, 40, 25, my.crops.plantC); 
+        let wheat = new plantType(7, 25, 15, my.crops.plantB);
+        let brambleberry = new plantType(10, 20, 10, my.crops.plantC);
+        let gilderberry = new plantType(4, 40, 25, my.crops.plantD); 
 
-        // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
+        this.PlantTypes = [];
+        this.seedsInPlay = [];
+        for(let i = 0; i< my.plantLibrary.length; i++){
+            console.log(my.plantLibrary[i]);
+            this.PlantTypes.push(plantCompiler(my.plantLibrary[i]));
+            if(this.PlantTypes[i].isStarter()){
+                this.seedsInPlay.push(i);
+            }
+        }
+        
+        
         // seedPacket = Array.from(plantTypes.keys());
 
         this.board = new Board(tileDim.width, tileDim.height);
@@ -35,17 +45,23 @@ class Farm extends Phaser.Scene {
         this.history = [];
         this.redoStack = [];
 
-        this.currentSeed = 0;
+        
         this.gameFrozen = false;
 
         plantTypes = [wheat, brambleberry, gilderberry];
-        this.seedsInPlay = [0, 1, 2];
+        
+        this.slot = 0;
+        this.currentSeed = this.seedsInPlay[this.slot];
+
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0); //intializes plants in inventory
         }
     }
 
     create() {
+        console.log("logging plant types");
+        console.log(this.PlantTypes);
+        console.log(this.seedsInPlay);
         //Create all the objects needed for this scene
         this.drawBoard();
 
@@ -84,7 +100,6 @@ class Farm extends Phaser.Scene {
             this.updateAllCellTexts();
             this.record();
         }
-        
         // Inputs for movement and other actions
         this.input.keyboard.on('keydown-SPACE', () => { if (!this.gameFrozen) { this.tick() } }, this);
         this.input.keyboard.on('keydown-W', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } }, this);
@@ -95,7 +110,7 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on('keydown-I', () => { if (!this.gameFrozen) { this.redo() } }, this);
         this.input.on('pointerdown', (e) => {
             if (e.button == 0) {
-                if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
+                if (!this.gameFrozen) { this.clickCell(e.x, e.y) };
             }
         });
         this.input.keyboard.on(`keydown-O`, this.savePrompt, this);
@@ -104,7 +119,24 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on(`keydown-ONE`, () => { this.switchCurSeed(0);}, this);
         this.input.keyboard.on(`keydown-TWO`, () => { this.switchCurSeed(1);}, this);
         this.input.keyboard.on(`keydown-THREE`, () => { this.switchCurSeed(2);}, this);
-    
+        this.input.keyboard.on(`keydown-E`, () => { this.changeSeed(1);}, this);
+        this.input.keyboard.on(`keydown-Q`, () => { this.changeSeed(-1);}, this);
+
+        //create buttons in the button shelf
+        
+        createButton("⌛", () => { if (!this.gameFrozen) { this.tick() } });
+        createButton("⬆️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } });
+        createButton("⬅️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [-1, 0]) } });
+        createButton("➡️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } });
+        createButton("⬇️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } });
+        createButton("⏪", () => { this.changeSeed(-1);});
+        createButton("⏩", () => { this.changeSeed(1);})
+        createButton("↩️", () => { if (!this.gameFrozen) { this.undo() } });
+        createButton("↪️", () => { if (!this.gameFrozen) { this.redo() } });
+        createButton("💾", this.savePrompt);
+        createButton("🔄", this.loadPrompt);
+        createButton("🚮", this.deletePrompt);
+        
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
     }
 
@@ -244,7 +276,7 @@ class Farm extends Phaser.Scene {
                 }
             }
         }
-        const highestSunshine = randIntRange(MIN_SUN * frameSunMod, MAX_SUN * frameSunMod);
+        const highestSunshine = randIntRange((MAX_SUN + MIN_SUN) / 2 * frameSunMod, MAX_SUN * frameSunMod);
         const randTile = [randIntRange(0, this.board.width), randIntRange(0, this.board.height)];
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
@@ -260,10 +292,12 @@ class Farm extends Phaser.Scene {
 
                 //Growth Simulation
                 if(curEntry.getCrop() != undefined){
-                    if(plantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth()) ){
-                        curEntry.setMoisture(curEntry.getMoisture() - plantTypes[curEntry.getCrop()].moistureConsumption);
+                    const cost = this.PlantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth(), ["fallow"])
+                    if(cost > -1){
+                        curEntry.setMoisture(curEntry.getMoisture() - cost);
                         curEntry.setGrowth(curEntry.getGrowth() + 1);
-                        this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
+                        //this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
+                        this.plantCropSprite(i, j, curEntry.getCrop(), curEntry.getGrowth());
                     }
                 }
             }
@@ -276,25 +310,47 @@ class Farm extends Phaser.Scene {
 
     //TODO : internationalize
     hudUpdate(){
-        this.heldseed.text = 'Held Seed: Plant ' + (this.currentSeed + 1);
+        this.heldseed.text = 'Held Seed: ' + this.PlantTypes[this.currentSeed].plantName; (this.currentSeed + 1);
         let harvestText = "Harvested Total: " + this.board.getPlant("0") + ", " + this.board.getPlant("1") + ", " + this.board.getPlant("2");  // can also call e.g. this.board.getPlant("wheat")
         this.harvested.text = harvestText;
     }
 
-    plantCrop(mx, my){
+    changeSeed(dir){
+        this.slot += dir;
+
+        if(this.slot < 0){
+            this.slot = this.seedsInPlay.length - 1;
+        }
+        if(this.slot >= this.seedsInPlay.length){
+            this.slot = 0;
+        }
+
+        console.log(this.slot);
+
+        this.currentSeed = this.seedsInPlay[this.slot];
+        console.log(this.currentSeed)
+        this.hudUpdate();
+    }
+
+    clickCell(mx, my){
         let [u, v] = [Math.floor(mx / this.tileWidth), Math.floor(my / this.tileHeight)];
         let curLoc = this.board.getPlayerLoc()
-        let entry = this.board.getEntry(u, v);
         if(cellDistOctal([curLoc.x, curLoc.y], [u, v]) <= 1){
+            let entry = this.board.getEntry(u, v);
             if(entry.getCrop() == undefined){
-                entry.setCrop(this.currentSeed);
-                entry.setGrowth(0);
-                this.plantCropSprite(u, v, this.currentSeed, 0);
-                this.tick();
+                this.plantNewCrop(u, v, this.currentSeed);
             } else {
                 this.harvestCrop(u, v);
             }
         }
+    }
+
+    plantNewCrop(u, v, seed) {
+        let entry = this.board.getEntry(u, v);
+        entry.setCrop(seed);
+        entry.setGrowth(0);
+        this.plantCropSprite(u, v, seed, 0);
+        this.tick();
     }
 
     addCropSprite(u, v) {
@@ -308,7 +364,9 @@ class Farm extends Phaser.Scene {
     plantCropSprite(u, v, type, growth) {
         console.log("planted");
         let cropSprite = this.cropSprites[[u,v].toString()]
-        cropSprite.overrideType(plantTypes[type].growthFrames, growth);
+        //cropSprite.overrideType(plantTypes[type].growthFrames, growth);
+        console.log(this.PlantTypes[type].getSprite(growth));
+        cropSprite.setTexture(this.PlantTypes[type].getSprite(growth));
         let plantScale = (this.tileWidth) / (cropSprite.width * 2);
         cropSprite.setScale(plantScale, plantScale);
         cropSprite.setVisible(true);
@@ -317,7 +375,7 @@ class Farm extends Phaser.Scene {
     harvestCrop(u, v) {
         let entry = this.board.getEntry(u, v);
         //let curEntry = this.board.getEntry(i, j);
-        if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
+        if(entry.getGrowth() == this.PlantTypes[(entry.getCrop())].getLastStage()) {
             this.cropSprites[[u,v].toString()].setVisible(false);
             this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
