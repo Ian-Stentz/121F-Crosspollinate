@@ -129,8 +129,8 @@ class Farm extends Phaser.Scene {
         createButton("⌛", () => { if (!this.gameFrozen) { this.tick() } });
         createButton("⬆️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } });
         createButton("⬅️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [-1, 0]) } });
-        createButton("➡️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } });
-        createButton("⬇️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } });
+        createButton("⬇️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } });
+        createButton("➡️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } });
         createButton("⏪", () => { this.changeSeed(-1);});
         createButton("⏩", () => { this.changeSeed(1);})
         createButton("↩️", () => { if (!this.gameFrozen) { this.undo() } });
