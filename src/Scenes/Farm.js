@@ -318,13 +318,24 @@ class Farm extends Phaser.Scene {
                 //Growth Simulation
                 if(curEntry.getCrop() != undefined){
                     const adjacent = this.adjacent(i,j, false);
-                    console.log(adjacent);
+                    //console.log(adjacent);
                     const cost = this.PlantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth(), adjacent);
                     if(cost > -1){
                         curEntry.setMoisture(curEntry.getMoisture() - cost);
                         curEntry.setGrowth(curEntry.getGrowth() + 1);
                         //this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
                         this.plantCropSprite(i, j, curEntry.getCrop(), curEntry.getGrowth());
+                    }
+                }
+                else{
+                    const adjacent = this.adjacent(i,j, true);
+                    //console.log(adjacent);
+                    for(let c = 0; c < this.PlantTypes.length; c++){
+                        if(this.PlantTypes[c].canCrossbreed(adjacent)){
+                            //console.log("crossbreeding!")
+                            this.plantNewCrop(i, j, c);
+                            break;
+                        }
                     }
                 }
             }
@@ -405,6 +416,7 @@ class Farm extends Phaser.Scene {
             let entry = this.board.getEntry(u, v);
             if(entry.getCrop() == undefined){
                 this.plantNewCrop(u, v, this.currentSeed);
+                this.tick();
             } else {
                 this.harvestCrop(u, v);
             }
@@ -416,7 +428,7 @@ class Farm extends Phaser.Scene {
         entry.setCrop(seed);
         entry.setGrowth(0);
         this.plantCropSprite(u, v, seed, 0);
-        this.tick();
+        
     }
 
     addCropSprite(u, v) {
@@ -428,10 +440,10 @@ class Farm extends Phaser.Scene {
     }
 
     plantCropSprite(u, v, type, growth) {
-        console.log("planted");
+        //console.log("planted");
         let cropSprite = this.cropSprites[[u,v].toString()]
         //cropSprite.overrideType(plantTypes[type].growthFrames, growth);
-        console.log(this.PlantTypes[type].getSprite(growth));
+        //console.log(this.PlantTypes[type].getSprite(growth));
         cropSprite.setTexture(this.PlantTypes[type].getSprite(growth));
         let plantScale = (this.tileWidth) / (cropSprite.width * 2);
         cropSprite.setScale(plantScale, plantScale);

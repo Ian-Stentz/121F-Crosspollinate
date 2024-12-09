@@ -22,38 +22,31 @@ function cellDistOctal(c1, c2){
 }
 
 //TODO : Replace below
+const croplist = [
+    "pond",
+    "wheat",
+    "brambleberry",
+    "carrot",
+    "gilderberry",
+    "barley",
+    "sugarcane",
+    "parsnip",
+    "corn",
+    "starfruit",
+    "pumpkin",
+]
+
 function cropToNumber(cropName) {
-    switch (cropName) {
-        case "pond":
-            return 0;
-        case "wheat":
-            return 1;
-        case "brambleberry":
-            return 2;
-        case "carrot":
-            return 3;
-        case "gilderberry":
-            return 4;
-        default:
-            return -1;
+    for(i = 0; i < croplist.length; i++){
+        if(croplist[i] == cropName){
+            return(i)
+        }
     }
+    return(-1);
 }
 
 function numberToCrop(number) {
-    switch(number) {
-        case 0:
-            return "pond";
-        case 1:
-            return "wheat";
-        case 2:
-            return "brambleberry";
-        case 3:
-            return "carrot";
-        case 4:
-            return "gilderberry";
-        default:
-            return "";
-    }
+    return(croplist[number]);
 }
 
 function createButton(icon, callback) {

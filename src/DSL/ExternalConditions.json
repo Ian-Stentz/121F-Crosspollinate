@@ -67,17 +67,7 @@
     ],
     "win_conditions": [
       [
-        "brambleberry",
-        "harvest",
-        1
-      ],
-      [
-        "wheat",
-        "harvest",
-        1
-      ],
-      [
-        "gilderberry",
+        "sugarcane",
         "harvest",
         1
       ]

@@ -39,15 +39,20 @@ class PlantType{
             return(false);
         }
 
-        for(let i in this.parents){
+        console.log(this.parents);
+
+        for(let i = 0; i < this.parents.length; i++){
+            console.log(`checking for parent ${i}`);
             let hasParent = false;
-            for(let j in adjacent){
-                if(i == j){
+            for(let j = 0; j < adjacent.length; j++){
+                if(this.parents[i] == adjacent[j]){
+                    console.log(`found parent ${i}`);
                     hasParent = true;
                     break;
                 }
             }
             if(!hasParent){
+                console.log(`could not find parent ${i}`);
                 return(false);
             }
         }
