@@ -260,6 +260,7 @@ class Farm extends Phaser.Scene {
             this.movePlayerPos(player, newX, newY);
             this.tick();
         }
+        this.hudUpdate();
     }
 
     simCells(){
@@ -421,6 +422,7 @@ class Farm extends Phaser.Scene {
             } else {
                 this.harvestCrop(u, v);
             }
+            this.hudUpdate();
         }
     }
 
