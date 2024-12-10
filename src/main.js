@@ -27,6 +27,7 @@ const MIN_SUN = 0;
 const MAX_SUN = 20;
 const WATER_COEFFICIENT = 12;
 const MAX_WATER = 50;
+const BUTTON_SHELF_BUFFER = 16;
 const HEIGHT_UNUSED_FOR_TILES = 50;
 let gameTheme = 0x104000;
 
