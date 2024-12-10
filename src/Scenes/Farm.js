@@ -47,7 +47,7 @@ class Farm extends Phaser.Scene {
         this.redoStack = [];
 
         
-        this.gameFrozen = false;
+        this.gameFrozen = false;;
 
         plantTypes = [wheat, brambleberry, gilderberry];
         
