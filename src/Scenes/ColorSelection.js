@@ -34,7 +34,7 @@ class ColorSelectionScene extends Phaser.Scene {
         redButton.on('pointerdown', () => this.selectColor(0x400000));
         greenButton.on('pointerdown', () => this.selectColor(0x104000));
         blueButton.on('pointerdown', () => this.selectColor(0x002b40));
-        yellowButton.on('pointerdown', () => this.selectColor(0x104000));
+        yellowButton.on('pointerdown', () => this.selectColor(0x5e6b00));
         pinkButton.on('pointerdown', () => this.selectColor(0x400040));
 
     }
