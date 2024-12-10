@@ -14,7 +14,7 @@ let config = {
     width: 600,
     height: 650,
     //backgroundColor: `#104000`,
-    backgroundColor: `#000000`,
+    backgroundColor: `#FFFFFF`,
     scene: [Load, LanguageSelectionScene, ColorSelectionScene, Farm, Menu]
 }
 

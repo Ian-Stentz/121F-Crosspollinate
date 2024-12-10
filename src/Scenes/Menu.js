@@ -57,6 +57,23 @@ class Menu extends Phaser.Scene {
         this.input.on('gameobjectdown', function () {
             self.scene.start('farmScene');
         });
+
+        let controltxt; 
+        switch(gameLang){
+            case 'en':
+                controltxt = 'Use ← ↑ → ↓ to move. \n Click to plant or harvest. \n Use number keys to change equipped seed.'
+                break;
+            case 'es':
+                controltxt = 'Usa ← ↑ → ↓ para moverte. \n Haga clic para plantar o cosechar. \n Usa las teclas numéricas para cambiar la semilla equipada.'
+                break;
+            case 'ar':
+                controltxt = 'استخدم ← ↑ → ↓ للتحرك. \n انقر للزراعة أو الحصاد. \n استخدم مفاتيح الأرقام لتغيير البذور المجهزة.'
+                break;
+            case 'zh':
+                controltxt = '使用 ← ↑ → ↓ 移动。 \n 点击种植或收获。 \n 使用数字键来更改装备的种子。'
+                break;
+        }
+        const title = this.add.text(config.width / 2, 3 *config.height / 4, controltxt, { fontSize: '15px' }).setOrigin(0.5);
     }
 
 

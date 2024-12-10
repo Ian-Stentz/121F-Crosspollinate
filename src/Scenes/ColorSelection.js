@@ -4,7 +4,7 @@ class ColorSelectionScene extends Phaser.Scene {
     }
 
     create() {
-        // Create UI elements for selecting a language
+
         let gamebackground = this.add.rectangle(0, 0, 4*config.width, 4*config.height, gameTheme, 1);
 
         let titletxt; let redtxt; let greentxt; let bluetxt; let yellowtxt; let pinktxt;
