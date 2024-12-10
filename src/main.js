@@ -13,8 +13,9 @@ let config = {
     },
     width: 600,
     height: 650,
-    backgroundColor: `#104000`,
-    scene: [Load, LanguageSelectionScene, Farm, Menu]
+    //backgroundColor: `#104000`,
+    backgroundColor: `#000000`,
+    scene: [Load, LanguageSelectionScene, ColorSelectionScene, Farm, Menu]
 }
 
 const game = new Phaser.Game(config);
@@ -27,6 +28,7 @@ const MAX_SUN = 20;
 const WATER_COEFFICIENT = 12;
 const MAX_WATER = 50;
 const HEIGHT_UNUSED_FOR_TILES = 50;
+let gameTheme = 0x104000;
 
 const FRAME_BYTES = 2;
 const COORD_BYTES = 2;

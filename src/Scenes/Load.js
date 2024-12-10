@@ -101,7 +101,6 @@ class Load extends Phaser.Scene {
             function Wheat(DSL, sprites){
                 DSL.ID(1);
                 DSL.Name("Wheat"); 
-                
                 DSL.Stages(5); 
                 if(sprites){
                     DSL.Sprites(sprites);
@@ -207,6 +206,7 @@ class Load extends Phaser.Scene {
 
         ]
        this.scene.start("languageSelectionScene");
+       //this.scene.start("ColorSelectionScene");
     }
 
     //Load should never get to update

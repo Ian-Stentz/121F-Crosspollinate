@@ -7,8 +7,7 @@ class Farm extends Phaser.Scene {
     }
 
     preload() {
-        // Load localization file
-        this.load.json('localization', 'assets/localization.json');
+        //any loading not done in Load.js goes here
     }
 
     init() {
@@ -16,21 +15,11 @@ class Farm extends Phaser.Scene {
         //any initialization of global variables go here
         this.eventEmitter = new Phaser.Events.EventEmitter();
 
-        let wheat = new plantType(7, 25, 15, my.crops.plantB);
-        let brambleberry = new plantType(10, 20, 10, my.crops.plantC);
-        let gilderberry = new plantType(4, 40, 25, my.crops.plantD); 
+        let wheat = new plantType(7, 25, 15, my.crops.plantA);
+        let brambleberry = new plantType(10, 20, 10, my.crops.plantB);
+        let gilderberry = new plantType(4, 40, 25, my.crops.plantC); 
 
-        this.PlantTypes = [];
-        this.seedsInPlay = [];
-        for(let i = 0; i< my.plantLibrary.length; i++){
-            console.log(my.plantLibrary[i]);
-            this.PlantTypes.push(plantCompiler(my.plantLibrary[i]));
-            if(this.PlantTypes[i].isStarter()){
-                this.seedsInPlay.push(i);
-            }
-        }
-        
-        
+        // plantTypes = new Map([["Brambleberry", brambleberry], ["Wheat", wheat], ["Gilderberry", gilderberry]]);
         // seedPacket = Array.from(plantTypes.keys());
 
         this.board = new Board(tileDim.width, tileDim.height);
@@ -45,57 +34,28 @@ class Farm extends Phaser.Scene {
 
         this.history = [];
         this.redoStack = [];
+        this.harvestedTotal = [0,0,0];
 
-        
+        this.currentSeed = 0;
         this.gameFrozen = false;
 
         plantTypes = [wheat, brambleberry, gilderberry];
-        
-        this.slot = 0;
-        this.currentSeed = this.seedsInPlay[this.slot];
-
+        this.seedsInPlay = [0, 1, 2];
         for(let i = 0; i < plantTypes.length; i++) {
           this.board.setPlant(i, 0); //intializes plants in inventory
         }
     }
 
     create() {
-        let gamebackground = this.add.rectangle(0, 0, 4*config.width, 4*config.height, gameTheme, 1);
-        buttonShelf = document.querySelector("#shelf");
-        console.log("BUTTON SHELF: " + buttonShelf);
-        console.log("logging plant types");
-        console.log(this.PlantTypes);
-        console.log(this.seedsInPlay);
         //Create all the objects needed for this scene
         this.drawBoard();
 
         this.createPlayer();
 
-        // Internationalize
-        // Dynamically get the current language from the registry
-        const language = this.registry.get('language') || 'en';
-        const translations = this.cache.json.get('localization')[language];
-
-        // Use translated texts
-        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES + 6, 
-            translations.heldSeedText.replace("{0}", this.currentSeed + 1), 
-            { fontSize: '20px', color: "#FEE" }).setOrigin(0);
-        
-        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES / 2 + 6, 
-            translations.harvestedText.replace("{0}", 0).replace("{1}", 0).replace("{2}", 0),
-            { fontSize: '20px', color: "#EFE" }).setOrigin(0);
-
-        // Handle RTL languages (like Arabic)
-        if (language === 'ar') {
-            this.heldseed.setAlign('right');  // Right-align for Arabic
-            this.heldseed.setOrigin(1, 0.5);  // Right-align the text on the screen
-            this.harvested.setAlign('right');
-            this.harvested.setOrigin(1, 0.5);
-        } else if (language === 'zh') {
-            // Adjust font for Chinese logographic script if necessary
-            this.heldseed.setFontFamily('Noto Sans CJK');  // Example font for Chinese
-            this.harvested.setFontFamily('Noto Sans CJK');
-        }
+        //TODO: Internationalize
+        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 'Held Seed: Plant ' + (this.currentSeed + 1), {fontSize: '20px', color:"#FEE"}).setOrigin(0);
+        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES/2, 
+            "Wheat: " + this.harvestedTotal[0] + ", Bramble: " + this.harvestedTotal[1] + ", BlackBerry: " + this.harvestedTotal[2] , {fontSize: '20px', color:"#EFE"}).setOrigin(0);
         
         this.initCropSprites();
 
@@ -106,8 +66,8 @@ class Farm extends Phaser.Scene {
         const savedState = localStorage.getItem(AUTO_SAVE_SLOT_NAME + UNDO_APPEND);
         if (savedState) {
             // Prompt the player to continue or start a new game
-            // Internationalize
-            const continueGame = confirm(translations.continuePrompt);
+            //TODO: Internationalize
+            const continueGame = confirm("Do you want to continue from where you left off?");
             if (continueGame) {
                 console.log("reloading past game...");
                 this.loadGame(AUTO_SAVE_SLOT_NAME);
@@ -126,6 +86,7 @@ class Farm extends Phaser.Scene {
             this.updateAllCellTexts();
             this.record();
         }
+        
         // Inputs for movement and other actions
         this.input.keyboard.on('keydown-SPACE', () => { if (!this.gameFrozen) { this.tick() } }, this);
         this.input.keyboard.on('keydown-W', () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } }, this);
@@ -136,7 +97,7 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on('keydown-I', () => { if (!this.gameFrozen) { this.redo() } }, this);
         this.input.on('pointerdown', (e) => {
             if (e.button == 0) {
-                if (!this.gameFrozen) { this.clickCell(e.x, e.y) };
+                if (!this.gameFrozen) { this.plantCrop(e.x, e.y) };
             }
         });
         this.input.keyboard.on(`keydown-O`, this.savePrompt, this);
@@ -145,24 +106,7 @@ class Farm extends Phaser.Scene {
         this.input.keyboard.on(`keydown-ONE`, () => { this.switchCurSeed(0);}, this);
         this.input.keyboard.on(`keydown-TWO`, () => { this.switchCurSeed(1);}, this);
         this.input.keyboard.on(`keydown-THREE`, () => { this.switchCurSeed(2);}, this);
-        this.input.keyboard.on(`keydown-E`, () => { this.changeSeed(1);}, this);
-        this.input.keyboard.on(`keydown-Q`, () => { this.changeSeed(-1);}, this);
-
-        //create buttons in the button shelf
-        
-        createButton("⌛", () => { if (!this.gameFrozen) { this.tick() } });
-        createButton("⬆️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, -1]) } });
-        createButton("⬅️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [-1, 0]) } });
-        createButton("⬇️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [0, 1]) } });
-        createButton("➡️", () => { if (!this.gameFrozen) { this.movePlayerDir(my.player, [1, 0]) } });
-        createButton("⏪", () => { this.changeSeed(1);});
-        createButton("⏩", () => { this.changeSeed(-1);})
-        createButton("↩️", () => { if (!this.gameFrozen) { this.undo() } });
-        createButton("↪️", () => { if (!this.gameFrozen) { this.redo() } });
-        createButton("💾", () => { this.savePrompt() });
-        createButton("🔄", () => { this.loadPrompt() });
-        createButton("🚮", () => { this.deletePrompt() });
-        
+    
         this.eventEmitter.on("checkWin", () => { this.checkWinCon() }, this);
     }
 
@@ -216,7 +160,7 @@ class Farm extends Phaser.Scene {
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
                 let curEntry = this.board.getEntry(i, j);
-                let newRect = this.add.rectangle(i*this.tileWidth, j*this.tileHeight, this.tileWidth, this.tileHeight, gameTheme + (0x118c13 - 0x104000), 1);
+                let newRect = this.add.rectangle(i*this.tileWidth, j*this.tileHeight, this.tileWidth, this.tileHeight, 0x118c13, 1);
                 newRect.setOrigin(0)
                 newRect.setStrokeStyle(3, 0x000000);
                 let fontSize = 14;
@@ -302,7 +246,7 @@ class Farm extends Phaser.Scene {
                 }
             }
         }
-        const highestSunshine = randIntRange((MAX_SUN + MIN_SUN) / 2 * frameSunMod, MAX_SUN * frameSunMod);
+        const highestSunshine = randIntRange(MIN_SUN * frameSunMod, MAX_SUN * frameSunMod);
         const randTile = [randIntRange(0, this.board.width), randIntRange(0, this.board.height)];
         for (let i = 0; i < this.board.width; i++) {
             for (let j = 0; j < this.board.height; j++) {
@@ -318,25 +262,10 @@ class Farm extends Phaser.Scene {
 
                 //Growth Simulation
                 if(curEntry.getCrop() != undefined){
-                    const adjacent = this.adjacent(i,j, false);
-                    //console.log(adjacent);
-                    const cost = this.PlantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth(), adjacent);
-                    if(cost > -1){
-                        curEntry.setMoisture(curEntry.getMoisture() - cost);
+                    if(plantTypes[curEntry.getCrop()].canGrow(curEntry.getSunlight(), curEntry.getMoisture(), curEntry.getGrowth()) ){
+                        curEntry.setMoisture(curEntry.getMoisture() - plantTypes[curEntry.getCrop()].moistureConsumption);
                         curEntry.setGrowth(curEntry.getGrowth() + 1);
-                        //this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
-                        this.plantCropSprite(i, j, curEntry.getCrop(), curEntry.getGrowth());
-                    }
-                }
-                else{
-                    const adjacent = this.adjacent(i,j, true);
-                    //console.log(adjacent);
-                    for(let c = 0; c < this.PlantTypes.length; c++){
-                        if(this.PlantTypes[c].canCrossbreed(adjacent)){
-                            //console.log("crossbreeding!")
-                            this.plantNewCrop(i, j, c);
-                            break;
-                        }
+                        this.cropSprites[[i,j].toString()].setStage(curEntry.getGrowth());
                     }
                 }
             }
@@ -347,89 +276,27 @@ class Farm extends Phaser.Scene {
         this.eventEmitter.emit("updateCell" + x + y);
     }
 
-    adjacent(u, v, mature){
-        const adj = []
-        for (let i = 0; i < this.board.width; i++) {
-            for (let j = 0; j < this.board.height; j++) {
-                if(cellDistManhattan([u,v], [i,j]) == 1){
-                    let curEntry = this.board.getEntry(i, j);
-                    if(curEntry.getCrop() == undefined){
-                        adj.push("fallow");
-                    }
-                    else if(mature && curEntry.getGrowth() < this.PlantTypes[(curEntry.getCrop())].getLastStage()){
-                        adj.push("fallow");
-                    }
-                    else{
-                        adj.push(this.PlantTypes[(curEntry.getCrop())].plantName);
-                    }
-                }
-            }
-        }
-        return(adj);
-    }
-
-    // Utility function to adjust text alignment based on language
-    adjustTextAlignment(textObject, languageCode) {
-        if (languageCode === 'ar') {  // Arabic language code
-            textObject.setOrigin(1, 0.5); // Right-aligned (for RTL)
-            textObject.setAlign('right'); // Align text to the right side
-        } else { 
-            textObject.setOrigin(0, 0.5); // Left-aligned (for LTR languages)
-            textObject.setAlign('left');  // Align text to the left side
-        }
-    }
-
-
-    // Internationalize the HUD
+    //TODO : internationalize
     hudUpdate(){
-        // Dynamically get the current language from the registry
-        const language = this.registry.get('language') || 'en';
-        const translations = this.cache.json.get('localization')[language];
-
-        this.heldseed.text = translations.heldSeedText.replace("{0}", this.currentSeed + 1);
-        this.harvested.text = translations.harvestedText.replace("{0}", this.board.getPlant("0")).replace("{1}", this.board.getPlant("1")).replace("{2}", this.board.getPlant("2"));
-
-        //this.adjustTextAlignment(this.heldseed, language);
-        //this.adjustTextAlignment(this.harvested, language);
+        this.heldseed.text = 'Held Seed: Plant ' + (this.currentSeed + 1);
+        let harvestText = "Wheat: " + this.harvestedTotal[0] + ", Bramble: " + this.harvestedTotal[1] + ", BlackBerry: " + this.harvestedTotal[2]; 
+        this.harvested.text = harvestText;
     }
 
-    changeSeed(dir){
-        this.slot += dir;
-
-        if(this.slot < 0){
-            this.slot = this.seedsInPlay.length - 1;
-        }
-        if(this.slot >= this.seedsInPlay.length){
-            this.slot = 0;
-        }
-
-        console.log(this.slot);
-
-        this.currentSeed = this.seedsInPlay[this.slot];
-        console.log(this.currentSeed)
-        this.hudUpdate();
-    }
-
-    clickCell(mx, my){
+    plantCrop(mx, my){
         let [u, v] = [Math.floor(mx / this.tileWidth), Math.floor(my / this.tileHeight)];
         let curLoc = this.board.getPlayerLoc()
+        let entry = this.board.getEntry(u, v);
         if(cellDistOctal([curLoc.x, curLoc.y], [u, v]) <= 1){
-            let entry = this.board.getEntry(u, v);
             if(entry.getCrop() == undefined){
-                this.plantNewCrop(u, v, this.currentSeed);
+                entry.setCrop(this.currentSeed);
+                entry.setGrowth(0);
+                this.plantCropSprite(u, v, this.currentSeed, 0);
                 this.tick();
             } else {
                 this.harvestCrop(u, v);
             }
         }
-    }
-
-    plantNewCrop(u, v, seed) {
-        let entry = this.board.getEntry(u, v);
-        entry.setCrop(seed);
-        entry.setGrowth(0);
-        this.plantCropSprite(u, v, seed, 0);
-        
     }
 
     addCropSprite(u, v) {
@@ -441,11 +308,9 @@ class Farm extends Phaser.Scene {
     }
 
     plantCropSprite(u, v, type, growth) {
-        //console.log("planted");
+        console.log("planted");
         let cropSprite = this.cropSprites[[u,v].toString()]
-        //cropSprite.overrideType(plantTypes[type].growthFrames, growth);
-        //console.log(this.PlantTypes[type].getSprite(growth));
-        cropSprite.setTexture(this.PlantTypes[type].getSprite(growth));
+        cropSprite.overrideType(plantTypes[type].growthFrames, growth);
         let plantScale = (this.tileWidth) / (cropSprite.width * 2);
         cropSprite.setScale(plantScale, plantScale);
         cropSprite.setVisible(true);
@@ -454,7 +319,8 @@ class Farm extends Phaser.Scene {
     harvestCrop(u, v) {
         let entry = this.board.getEntry(u, v);
         //let curEntry = this.board.getEntry(i, j);
-        if(entry.getGrowth() == this.PlantTypes[(entry.getCrop())].getLastStage()) {
+        //console.log("harvesting planttype: " + )
+        if(entry.getGrowth() == plantTypes[(entry.getCrop())].getLastStage()) {
             this.cropSprites[[u,v].toString()].setVisible(false);
             this.board.addPlant(entry.getCrop(), 1);
             entry.setCrop(undefined);
@@ -476,12 +342,7 @@ class Farm extends Phaser.Scene {
                 stroke: '#8ff',
                 strokeThickness: 4
             }
-            // Dynamically get the current language from the registry
-            const language = this.registry.get('language') || 'en';
-            const translations = this.cache.json.get('localization')[language];
-
-            // Set winning text
-            this.add.text(game.config.width / 2, game.config.height / 2, translations.winText, fontSettings).setOrigin(0.5);
+            this.add.text(game.config.width / 2, game.config.height / 2, "You Win!", fontSettings).setOrigin(0.5);
         }
     }
 
@@ -671,24 +532,18 @@ class Farm extends Phaser.Scene {
         }
     }
 
-    // Prompts Internationalized
+    //TODO : prompts internationalized
     savePrompt() {
-        // Dynamically get the current language from the registry
-        const language = this.registry.get('language') || 'en';
-        const translations = this.cache.json.get('localization')[language];
-
         console.log("SAVEPROMPT");
-
-        let slot = prompt(translations.saveSlotPrompt, 1)
-
+        let slot = prompt("Which file would you like to save to? (1-6):", 1)
         //I call upon thee, dark magic of the regex
         const promptRe = /^[1-6]{1}$/;
         slot = promptRe.exec(slot);
         if(slot != null) {
             this.saveGame(slot);
-            confirm(translations.saveConfirm);
+            confirm("Save Successful");
         } else {
-            let choice = confirm(translations.invalidSlot);
+            let choice = confirm("Invalid Slot, would you like to try again?");
             if(choice) {
                 this.savePrompt();
             }
@@ -696,24 +551,17 @@ class Farm extends Phaser.Scene {
     }
 
     loadPrompt() {
-
-        // Dynamically get the current language from the registry
-        const language = this.registry.get('language') || 'en';
-        const translations = this.cache.json.get('localization')[language];
-
         console.log("LOADPROMPT");
-
-        let slot = prompt(translations.loadSlotPrompt, 1)
-
+        let slot = prompt("Which file would you like to load from? (1-6):", 1)
         //I call upon thee, dark magic of the regex
         const promptRe = /^[1-6]{1}$/;
         slot = promptRe.exec(slot);
         if(slot != null) {
             if(!this.loadGame(slot)) {
-                confirm(translations.noData.replace("{0}", slot));
+                confirm("No data found in slot " + slot);
             }
         } else {
-            let choice = confirm(translations.invalidSlot);
+            let choice = confirm("Invalid Slot, would you like to try again?");
             if(choice) {
                 this.loadPrompt();
             }
@@ -721,25 +569,18 @@ class Farm extends Phaser.Scene {
     }
 
     deletePrompt() {
-
-        // Dynamically get the current language from the registry
-        const language = this.registry.get('language') || 'en';
-        const translations = this.cache.json.get('localization')[language];
-
         console.log("DELETEPROMPT");
-
-        let slot = prompt(translations.deleteSlotPrompt, 1)
-
+        let slot = prompt("Which file would you like to delete? (1-6):", 1)
         //I call upon thee, dark magic of the regex
         const promptRe = /^[1-6]{1}$/;
         slot = promptRe.exec(slot);
         if(slot != null) {
-            let choice = confirm(translations.deleteConfirm.replace("{0}", slot))
+            let choice = confirm("Are you sure you want to remove slot " + slot + "?")
             if(choice) {
                 this.removeSlot(slot);
             }
         } else {
-            let choice = confirm(translations.invalidSlot);
+            let choice = confirm("Invalid Slot, would you like to try again?");
             if(choice) {
                 this.deletePrompt();
             }
@@ -763,12 +604,8 @@ class Farm extends Phaser.Scene {
     }
 
     promptScenario() {
-        // Dynamically get the current language from the registry
-        const language = this.registry.get('language') || 'en';
-        const translations = this.cache.json.get('localization')[language];
-
-        let promptstring = translations.scenarioPrompt;
-
+        //TODO : Internationalize
+        let promptstring = "Select a scenario: "
         const scenarios = this.cache.json.get("ExternalConditions")
         for(const scenarioName in scenarios) {
             promptstring += scenarioName + ", "

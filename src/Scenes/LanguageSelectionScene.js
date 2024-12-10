@@ -10,6 +10,7 @@ class LanguageSelectionScene extends Phaser.Scene {
 
     create() {
         // Create UI elements for selecting a language
+        let gamebackground = this.add.rectangle(0, 0, 4*config.width, 4*config.height, gameTheme, 1);
         const title = this.add.text(config.width / 2, config.height / 4, 'Select Language', { fontSize: '30px' }).setOrigin(0.5);
         
         // Create buttons for each language
@@ -48,7 +49,7 @@ class LanguageSelectionScene extends Phaser.Scene {
     // Change the language and move to the menu scene
     selectLanguage(languageCode) {
         this.registry.set('language', languageCode);  // Set the selected language in the registry
-        this.scene.start('menuScene');  // Move to the menu scene
+        this.scene.start('ColorSelectionScene');  // Move to the menu scene
     }
 
     // Optional: Add styles to buttons
