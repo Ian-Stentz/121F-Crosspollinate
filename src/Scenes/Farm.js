@@ -76,11 +76,11 @@ class Farm extends Phaser.Scene {
         const translations = this.cache.json.get('localization')[language];
 
         // Use translated texts
-        this.heldseed = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES, 
+        this.heldseed = this.add.text(0, (config.height + BUTTON_SHELF_BUFFER) - HEIGHT_UNUSED_FOR_TILES, 
             translations.heldSeedText.replace("{0}", this.currentSeed + 1), 
             { fontSize: '20px', color: "#FEE" }).setOrigin(0);
         
-        this.harvested = this.add.text(0, config.height - HEIGHT_UNUSED_FOR_TILES / 2, 
+        this.harvested = this.add.text(0, (config.height + BUTTON_SHELF_BUFFER) - HEIGHT_UNUSED_FOR_TILES / 2, 
             translations.harvestedText.replace("{0}", 0).replace("{1}", 0).replace("{2}", 0),
             { fontSize: '20px', color: "#EFE" }).setOrigin(0);
 

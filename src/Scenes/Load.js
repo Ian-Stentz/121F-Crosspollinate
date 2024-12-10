@@ -46,40 +46,7 @@ class Load extends Phaser.Scene {
         my.crops.barley = ["Barley-0", "Barley-1", "Barley-2", "Barley-3"];
         my.crops.sugarcane = ["Sugarcane-0", "Sugarcane-1", "Sugarcane-2"];
 
-        // Testing if this can automate (ish) crop sprites
-        // this.anims.create({
-        //     key: "plantA",
-        //     frames: this.anims.generateFrameNames("crop", {
-        //         prefix: "plantA-",
-        //         start: 0,
-        //         end: 3,
-        //         suffix: ".png"
-        //     }),
-        //     frameRate: 0,
-        // });
-        // this.anims.create({
-        //     key: "plantB",
-        //     frames: this.anims.generateFrameNames("crop", {
-        //         prefix: "plantB-",
-        //         start: 0,
-        //         end: 3,
-        //         suffix: ".png"
-        //     }),
-        //     frameRate: 0,
-        // });
-        // this.anims.create({
-        //     key: "plantC",
-        //     frames: this.anims.generateFrameNames("crop", {
-        //         prefix: "plantC-",
-        //         start: 0,
-        //         end: 2,
-        //         suffix: ".png"
-        //     }),
-        //     frameRate: 0,
-        // });
-
-        //go to the farm scene
-       //this.scene.start("farmScene");
+        //Library of plant types written in internal DSL
         my.plantLibrary = [
             function Pond(DSL, sprites){
                 DSL.ID(0);

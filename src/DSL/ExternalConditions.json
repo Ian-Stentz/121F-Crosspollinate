@@ -100,7 +100,7 @@
     ],
     "win_conditions": [
       [
-        "brambleberry",
+        "carrot",
         "harvest",
         1
       ],
@@ -110,7 +110,7 @@
         1
       ],
       [
-        "gilderberry",
+        "barley",
         "harvest",
         1
       ]
