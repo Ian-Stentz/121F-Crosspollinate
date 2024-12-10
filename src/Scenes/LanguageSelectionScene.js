@@ -48,7 +48,8 @@ class LanguageSelectionScene extends Phaser.Scene {
 
     // Change the language and move to the menu scene
     selectLanguage(languageCode) {
-        this.registry.set('language', languageCode);  // Set the selected language in the registry
+        this.registry.set('language', languageCode);  // Set the selected language in the regist
+        gameLang = languageCode;
         this.scene.start('ColorSelectionScene');  // Move to the menu scene
     }
 

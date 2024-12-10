@@ -30,6 +30,7 @@ const MAX_WATER = 50;
 const BUTTON_SHELF_BUFFER = 16;
 const HEIGHT_UNUSED_FOR_TILES = 50;
 let gameTheme = 0x104000;
+let gameLang = "es";
 
 const FRAME_BYTES = 2;
 const COORD_BYTES = 2;
